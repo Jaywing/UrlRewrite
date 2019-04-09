@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 namespace Hi.UrlRewrite.Processing.Results
 {
-
     public class InboundRuleResult : IRuleResult
     {
         public bool StopProcessing { get; set; }

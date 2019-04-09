@@ -3,6 +3,7 @@ using Sitecore.Diagnostics;
 using Sitecore.Globalization;
 using Sitecore.Sites;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Control = Sitecore.Web.UI.HtmlControls.Control;
 
@@ -10,7 +11,6 @@ namespace Hi.UrlRewrite.Fields
 {
     public class SiteDropList : Control
     {
-
         public SiteDropList()
         {
             SetClass();
@@ -28,19 +28,19 @@ namespace Hi.UrlRewrite.Fields
             output.Write("<select" + GetControlAttributes() + ">");
             output.Write("<option value=\"\"></option>");
 
-            bool valueFound = String.IsNullOrEmpty(Value);
+            bool valueFound = string.IsNullOrEmpty(Value);
 
-            var sites = SiteManager.GetSites()
+            List<Site> sites = SiteManager.GetSites()
                 .Where(s =>
                 {
-                    var rootPath = s.Properties["rootPath"];
-                    var db = s.Properties["database"];
+                    string rootPath = s.Properties["rootPath"];
+                    string db = s.Properties["database"];
 
                     return (rootPath != null && rootPath.StartsWith(@"/sitecore/content")) && (db != null && !db.Equals("core", StringComparison.InvariantCultureIgnoreCase));
                 })
                 .ToList();
 
-            foreach (var site in sites)
+            foreach (Site site in sites)
             {
                 string title = site.Name;
                 string value = site.Name;

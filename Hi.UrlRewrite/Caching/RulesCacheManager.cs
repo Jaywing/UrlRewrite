@@ -1,15 +1,12 @@
 ﻿using Sitecore.Data;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Sitecore.Diagnostics;
 
 namespace Hi.UrlRewrite.Caching
 {
     public static class RulesCacheManager
     {
-        private static Dictionary<string, RulesCache> Caches = new Dictionary<string, RulesCache>();
+        private static readonly Dictionary<string, RulesCache> Caches = new Dictionary<string, RulesCache>();
 
         public static RulesCache GetCache(Database db)
         {
@@ -19,14 +16,11 @@ namespace Hi.UrlRewrite.Caching
             {
                 return Caches[db.Name];
             }
-            else
-            {
-                var cache = new RulesCache(db);
-                Caches.Add(db.Name, cache);
 
-                return cache;
-            }
+            var cache = new RulesCache(db);
+            Caches.Add(db.Name, cache);
+
+            return cache;
         }
-
     }
 }

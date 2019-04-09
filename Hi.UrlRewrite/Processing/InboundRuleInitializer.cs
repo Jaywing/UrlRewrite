@@ -3,15 +3,15 @@ using Sitecore.Data;
 using Sitecore.Pipelines;
 using Sitecore.SecurityModel;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using Sitecore.Data.Items;
+using Sitecore.Workflows;
 
 namespace Hi.UrlRewrite.Processing
 {
     public class InboundRuleInitializer
     {
-        private string masterDatabaseName = "master";
+        private readonly string _masterDatabaseName = "master";
 
         public void Process(PipelineArgs args)
         {
@@ -21,10 +21,8 @@ namespace Hi.UrlRewrite.Processing
             {
                 using (new SecurityDisabler())
                 {
-
                     // cache all of the rules
-
-                    foreach (var db in Factory.GetDatabases().Where(e => e.HasContentItem))
+                    foreach (Database db in Factory.GetDatabases().Where(e => e.HasContentItem))
                     {
                         var rulesEngine = new RulesEngine(db);
                         rulesEngine.GetCachedInboundRules();
@@ -36,37 +34,29 @@ namespace Hi.UrlRewrite.Processing
             }
             catch (Exception ex)
             {
-                Hi.UrlRewrite.Log.Error(this, ex, "Exception during initialization.");
+                Log.Error(this, ex, "Exception during initialization.");
             }
         }
 
         private void DeployEventIfNecessary()
         {
-            if (!Sitecore.Configuration.Factory.GetDatabaseNames().Contains(masterDatabaseName, StringComparer.InvariantCultureIgnoreCase))
+            if (!Factory.GetDatabaseNames().Contains(_masterDatabaseName, StringComparer.InvariantCultureIgnoreCase))
             {
-                Log.Info(this, "Skipping DeployEventIfNecessary() as '{0}' database not present", masterDatabaseName);
+                Log.Info(this, "Skipping DeployEventIfNecessary() as '{0}' database not present", _masterDatabaseName);
                 return;
             }
 
-            var database = Sitecore.Data.Database.GetDatabase(masterDatabaseName);
-            if (database == null)
-            {
-                return;
-            }
+            Database database = Sitecore.Data.Database.GetDatabase(_masterDatabaseName);
 
-            var eventItem = database.GetItem(new ID(Constants.RedirectEventItemId));
+            Item eventItem = database?.GetItem(new ID(Constants.RedirectEventItemId));
             if (eventItem == null)
             {
                 return;
             }
 
-            var workflow = database.WorkflowProvider.GetWorkflow(eventItem);
-            if (workflow == null)
-            {
-                return;
-            }
+            IWorkflow workflow = database.WorkflowProvider.GetWorkflow(eventItem);
 
-            var workflowState = workflow.GetState(eventItem);
+            WorkflowState workflowState = workflow?.GetState(eventItem);
             if (workflowState == null)
             {
                 return;
@@ -80,14 +70,7 @@ namespace Hi.UrlRewrite.Processing
             }
 
             const string analyticsDeployCommandId = "{4044A9C4-B583-4B57-B5FF-2791CB0351DF}";
-            var workflowResult = workflow.Execute(analyticsDeployCommandId, eventItem, "Deploying UrlRewrite Redirect event during initialization", false, new object[0]);
-
+            WorkflowResult workflowResult = workflow.Execute(analyticsDeployCommandId, eventItem, "Deploying UrlRewrite Redirect event during initialization", false, new object[0]);
         }
-
-
-
     }
-
-
-
 }

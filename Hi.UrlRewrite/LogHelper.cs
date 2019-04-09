@@ -11,17 +11,17 @@ namespace Hi.UrlRewrite
     public static class LogHelper
     {
 
-        private static bool initialized;
+        private static bool _initialized;
 
         public static void Inititalize()
         {
-            if (!initialized)
+            if (!_initialized)
             {
                 if (Configuration.LogFileEnabled)
                 {
                     CreateLogger();
                 }
-                initialized = true;
+                _initialized = true;
             }
         }
 
@@ -48,12 +48,12 @@ namespace Hi.UrlRewrite
         public static void CreateLogger()
         {
             var logger = (Logger)LogManager.GetLogger("Hi.UrlRewrite").Logger;
-            var appender = CreateAppender();
+            IAppender appender = CreateAppender();
 
             logger.AddAppender(appender);
             logger.Additivity = false;
 
-            var configLogLevel = Configuration.LogFileLevel;
+            string configLogLevel = Configuration.LogFileLevel;
             var repository = (ILoggerRepository)logger.Hierarchy;
             Level logLevel;
 
@@ -67,7 +67,6 @@ namespace Hi.UrlRewrite
             }
 
             logger.Level = logLevel;
-
         }
     }
 }

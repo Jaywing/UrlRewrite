@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Hi.UrlRewrite.Processing.Results;
 using Sitecore.Data;
 using Sitecore.SecurityModel;
+using Sitecore.Sites;
 
 namespace Hi.UrlRewrite.Processing
 {
@@ -16,7 +18,7 @@ namespace Hi.UrlRewrite.Processing
 
         public void Process(HttpContextBase httpContext)
         {
-            var requestUri = httpContext.Request.Url;
+            Uri requestUri = httpContext.Request.Url;
             if (requestUri == null) return;
 
             if (Configuration.IgnoreUrlPrefixes.Length > 0 &&
@@ -26,25 +28,23 @@ namespace Hi.UrlRewrite.Processing
                 return;
             }
 
-            var siteContext = Context.Site;
-            if (siteContext == null) return;
+            SiteContext siteContext = Context.Site;
 
-            var db = siteContext.Database;
+            Database db = siteContext?.Database;
             if (db == null) return;
 
-            var outboundRules = GetOutboundRules(db);
+            List<OutboundRule> outboundRules = GetOutboundRules(db);
             var rewriter = new OutboundRewriter();
 
             // check preconditions
-
-            var transformer = new Tranformer(httpContext, rewriter, outboundRules);
+            var transformer = new Transformer(httpContext, rewriter, outboundRules);
             transformer.SetupResponseFilter();
         }
 
         private List<OutboundRule> GetOutboundRules(Database db)
         {
-            var cache = RulesCacheManager.GetCache(db);
-            var outboundRules = cache.GetOutboundRules();
+            RulesCache cache = RulesCacheManager.GetCache(db);
+            List<OutboundRule> outboundRules = cache.GetOutboundRules();
 
             if (outboundRules != null) return outboundRules;
 
@@ -59,7 +59,7 @@ namespace Hi.UrlRewrite.Processing
             return outboundRules;
         }
 
-        private class Tranformer
+        private class Transformer
         {
 
             private readonly HttpContextBase _httpContext;
@@ -68,7 +68,7 @@ namespace Hi.UrlRewrite.Processing
 
             private ResponseFilterStream _responseFilterStream;
 
-            public Tranformer(HttpContextBase httpContext, OutboundRewriter rewriter, List<OutboundRule> outboundRules)
+            public Transformer(HttpContextBase httpContext, OutboundRewriter rewriter, List<OutboundRule> outboundRules)
             {
                 _outboundRules = outboundRules;
                 _httpContext = httpContext;
@@ -82,27 +82,24 @@ namespace Hi.UrlRewrite.Processing
                 _httpContext.Response.Filter = _responseFilterStream;
             }
 
-            void HeadersWritten(HttpContextBase httpContext)
+            private void HeadersWritten(HttpContextBase httpContext)
             {
                 _outboundRules = _outboundRules.Where(rule => _rewriter.CheckPrecondition(httpContext, rule));
                 if (!_outboundRules.Any()) return;
 
                 _responseFilterStream.TransformString += TransformString;
-
             }
 
-            string TransformString(string responseString)
+            private string TransformString(string responseString)
             {
                 _rewriter.SetupReplacements(_httpContext.Request.ServerVariables, _httpContext.Request.Headers, _httpContext.Response.Headers);
-                var result = _rewriter.ProcessContext(_httpContext, responseString, _outboundRules);
+                ProcessOutboundRulesResult result = _rewriter.ProcessContext(_httpContext, responseString, _outboundRules);
 
                 if (result == null || !result.MatchedAtLeastOneRule)
                     return responseString;
 
                 return result.ResponseString;
             }
-
         }
-
     }
 }

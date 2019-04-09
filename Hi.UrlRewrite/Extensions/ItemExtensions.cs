@@ -20,7 +20,9 @@ using Hi.UrlRewrite.Templates.Outbound;
 using Hi.UrlRewrite.Templates.ServerVariables;
 using Sitecore;
 using Sitecore.Data;
+using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
+using Sitecore.Links;
 
 namespace Hi.UrlRewrite
 {
@@ -35,7 +37,7 @@ namespace Hi.UrlRewrite
         {
             if (outboundRuleItem == null) return null;
 
-            var conditionItems = GetBaseConditionItems(outboundRuleItem);
+            IEnumerable<BaseConditionItem> conditionItems = GetBaseConditionItems(outboundRuleItem);
 
             var outboundRule = new OutboundRule
             {
@@ -44,31 +46,27 @@ namespace Hi.UrlRewrite
             };
 
             SetBaseRule(outboundRuleItem.BaseRuleItem, outboundRule);
-
             SetOutboundMatch(outboundRuleItem.OutboundMatchItem, outboundRule);
-
             GetPrecondition(outboundRuleItem.OutboundPreconditionItem, outboundRule);
 
             if (string.IsNullOrEmpty(outboundRuleItem.BaseRuleItem.BaseMatchItem.MatchPatternItem.Pattern.Value))
             {
                 Log.Warn(logObject, outboundRuleItem.Database, "No pattern set on rule with ItemID: {0}", outboundRuleItem.ID);
-
                 return null;
             }
 
             if (outboundRuleItem.Action == null)
             {
                 Log.Warn(logObject, outboundRuleItem.Database, "No action set on rule with ItemID: {0}", outboundRuleItem.ID);
-
                 return null;
             }
 
-            var baseActionItem = outboundRuleItem.Action.TargetItem;
+            Item baseActionItem = outboundRuleItem.Action.TargetItem;
             IBaseAction baseAction = null;
 
             if (baseActionItem != null)
             {
-                var baseActionItemTemplateId = baseActionItem.TemplateID.ToString();
+                string baseActionItemTemplateId = baseActionItem.TemplateID.ToString();
 
                 if (baseActionItemTemplateId.Equals(OutboundRewriteItem.TemplateId, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -87,10 +85,9 @@ namespace Hi.UrlRewrite
 
         private static void GetPrecondition(OutboundPreconditionItem outboundPreconditionItem, OutboundRule outboundRule)
         {
-            if (outboundPreconditionItem == null || outboundPreconditionItem.Precondition == null ||
-                outboundPreconditionItem.Precondition.TargetItem == null) return;
+            if (outboundPreconditionItem?.Precondition?.TargetItem == null) return;
 
-            var preconditionTargetItem = outboundPreconditionItem.Precondition.TargetItem;
+            Item preconditionTargetItem = outboundPreconditionItem.Precondition.TargetItem;
             var preconditionItem = new PreconditionItem(preconditionTargetItem);
 
             var precondition = new Precondition
@@ -98,13 +95,13 @@ namespace Hi.UrlRewrite
                 Name = preconditionItem.Name,
             };
 
-            var conditionItems = GetBaseConditionItems(preconditionItem);
+            IEnumerable<BaseConditionItem> conditionItems = GetBaseConditionItems(preconditionItem);
             if (conditionItems != null)
             {
                 SetConditions(conditionItems, precondition);
             }
 
-            var usingItem = preconditionItem.PreconditionUsingItem.Using.TargetItem;
+            Item usingItem = preconditionItem.PreconditionUsingItem.Using.TargetItem;
             Using? usingType = null;
             if (usingItem != null)
             {
@@ -136,10 +133,8 @@ namespace Hi.UrlRewrite
 
             if (inboundRuleItem == null) return null;
 
-            var conditionItems = GetBaseConditionItems(inboundRuleItem);
-            //var serverVariableItems = GetServerVariableItems(inboundRuleItem);
-            //var requestHeaderItems = GetRequestHeaderItems(inboundRuleItem);
-            var responseHeaderItems = GetResponseHeaderItems(inboundRuleItem);
+            IEnumerable<BaseConditionItem> conditionItems = GetBaseConditionItems(inboundRuleItem);
+            IEnumerable<ResponseHeaderItem> responseHeaderItems = GetResponseHeaderItems(inboundRuleItem);
 
             var inboundRule = new InboundRule
             {
@@ -152,22 +147,20 @@ namespace Hi.UrlRewrite
             if (string.IsNullOrEmpty(inboundRuleItem.BaseRuleItem.BaseMatchItem.MatchPatternItem.Pattern.Value))
             {
                 Log.Warn(logObject, inboundRuleItem.Database, "No pattern set on rule with ItemID: {0}", inboundRuleItem.ID);
-
                 return null;
             }
 
             if (inboundRuleItem.Action == null)
             {
                 Log.Warn(logObject, inboundRuleItem.Database, "No action set on rule with ItemID: {0}", inboundRuleItem.ID);
-
                 return null;
             }
 
-            var baseActionItem = inboundRuleItem.Action.TargetItem;
+            Item baseActionItem = inboundRuleItem.Action.TargetItem;
             IBaseAction baseAction = null;
             if (baseActionItem != null)
             {
-                var baseActionItemTemplateId = baseActionItem.TemplateID.ToString();
+                string baseActionItemTemplateId = baseActionItem.TemplateID.ToString();
 
                 if (baseActionItemTemplateId.Equals(RedirectItem.TemplateId, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -200,16 +193,6 @@ namespace Hi.UrlRewrite
                 SetConditions(conditionItems, inboundRule);
             }
 
-            //if (serverVariableItems != null)
-            //{
-            //    SetServerVariables(serverVariableItems, inboundRule);
-            //}
-
-            //if (requestHeaderItems != null)
-            //{
-            //    SetRequestHeaders(requestHeaderItems, inboundRule);
-            //}
-
             if (responseHeaderItems != null)
             {
                 SetResponseHeaders(responseHeaderItems, inboundRule);
@@ -225,7 +208,7 @@ namespace Hi.UrlRewrite
         {
             IEnumerable<BaseConditionItem> conditionItems = null;
 
-            var conditions =
+            Item[] conditions =
                 item.Axes.SelectItems(string.Format(Constants.TwoTemplateQuery,
                     ConditionItem.TemplateId, ConditionAdvancedItem.TemplateId));
 
@@ -241,7 +224,7 @@ namespace Hi.UrlRewrite
         {
             IEnumerable<ServerVariableItem> serverVariableItems = null;
 
-            var serverVariables =
+            Item[] serverVariables =
                 item.Axes.SelectItems(string.Format(Constants.SingleTemplateQuery, ServerVariableItem.TemplateId));
 
             if (serverVariables != null)
@@ -256,7 +239,7 @@ namespace Hi.UrlRewrite
         {
             IEnumerable<RequestHeaderItem> requestHeaderItems = null;
 
-            var requestHeaders =
+            Item[] requestHeaders =
                 item.Axes.SelectItems(string.Format(Constants.SingleTemplateQuery, RequestHeaderItem.TemplateId));
 
             if (requestHeaders != null)
@@ -271,7 +254,7 @@ namespace Hi.UrlRewrite
         {
             IEnumerable<ResponseHeaderItem> responeHeaderItems = null;
 
-            var responseHeaders =
+            Item[] responseHeaders =
                 item.Axes.SelectItems(string.Format(Constants.SingleTemplateQuery, ResponseHeaderItem.TemplateId));
 
             if (responseHeaders != null)
@@ -284,7 +267,7 @@ namespace Hi.UrlRewrite
 
         private static void SetServerVariables(IEnumerable<ServerVariableItem> serverVariableItems, IServerVariableList serverVariableList)
         {
-            var serverVariables = serverVariableItems
+            List<ServerVariable> serverVariables = serverVariableItems
                 .Select(e => e.ToServerVariable())
                 .Where(e => e != null)
                 .ToList();
@@ -294,7 +277,7 @@ namespace Hi.UrlRewrite
 
         private static void SetResponseHeaders(IEnumerable<ResponseHeaderItem> responseHeaderItems, IResponseHeaderList responseHeaderList)
         {
-            var responseHeaders = responseHeaderItems
+            List<ResponseHeader> responseHeaders = responseHeaderItems
                 .Select(e => e.ToResponseHeader())
                 .Where(e => e != null)
                 .ToList();
@@ -304,7 +287,7 @@ namespace Hi.UrlRewrite
 
         private static void SetRequestHeaders(IEnumerable<RequestHeaderItem> requestHeaderItems, IRequestHeaderList requestHeaderList)
         {
-            var requestHeaders = requestHeaderItems
+            List<RequestHeader> requestHeaders = requestHeaderItems
                 .Select(e => e.ToRequestHeader())
                 .Where(e => e != null)
                 .ToList();
@@ -323,9 +306,7 @@ namespace Hi.UrlRewrite
         private static void SetBaseRule(BaseRuleItem baseRuleItem, IBaseRule baseRule)
         {
             SetBaseEnabled(baseRuleItem.InnerItem, baseRule);
-
             SetBaseMatch(baseRuleItem.BaseMatchItem, baseRule);
-
             SetConditionLogicalGrouping(baseRuleItem.ConditionLogicalGroupingItem, baseRule);
         }
 
@@ -336,11 +317,11 @@ namespace Hi.UrlRewrite
 
         private static void SetConditionLogicalGrouping(ConditionLogicalGroupingItem conditionLogicalGroupingItem, IConditionLogicalGrouping conditionLogicalGrouping)
         {
-            var logicalGroupingItem = conditionLogicalGroupingItem.LogicalGrouping.TargetItem;
+            Item logicalGroupingItem = conditionLogicalGroupingItem.LogicalGrouping.TargetItem;
             LogicalGrouping? logicalGroupingType = null;
             if (logicalGroupingItem != null)
             {
-                var logicalGroupingItemId = logicalGroupingItem.ID.ToString();
+                string logicalGroupingItemId = logicalGroupingItem.ID.ToString();
                 switch (logicalGroupingItemId)
                 {
                     case Constants.LogicalGroupingType_MatchAll_ItemId:
@@ -361,11 +342,11 @@ namespace Hi.UrlRewrite
             baseMatch.IgnoreCase = baseMatchItem.MatchIgnoreCaseItem.IgnoreCase.Checked;
             baseMatch.Pattern = baseMatchItem.MatchPatternItem.Pattern.Value;
 
-            var matchTypeItem = baseMatchItem.MatchMatchTypeItem.MatchType.TargetItem;
+            Item matchTypeItem = baseMatchItem.MatchMatchTypeItem.MatchType.TargetItem;
             MatchType? matchType = null;
             if (matchTypeItem != null)
             {
-                var requestUrlItemId = matchTypeItem.ID.ToString();
+                string requestUrlItemId = matchTypeItem.ID.ToString();
                 switch (requestUrlItemId)
                 {
                     case Constants.MatchType_MatchesThePattern_ItemId:
@@ -380,11 +361,11 @@ namespace Hi.UrlRewrite
             }
             baseMatch.MatchType = matchType;
 
-            var usingItem = baseMatchItem.MatchUsingItem.Using.TargetItem;
+            Item usingItem = baseMatchItem.MatchUsingItem.Using.TargetItem;
             Using? usingType = null;
             if (usingItem != null)
             {
-                var usingItemId = usingItem.ID.ToString();
+                string usingItemId = usingItem.ID.ToString();
                 switch (usingItemId)
                 {
                     case Constants.UsingType_RegularExpressions_ItemId:
@@ -407,10 +388,10 @@ namespace Hi.UrlRewrite
         {
             SetBaseMatch(outboundMatchItem.BaseMatchItem, outboundMatch);
 
-            var scopeTypeItem = outboundMatchItem.MatchScopeItem.MatchScopeType.TargetItem;
+            Item scopeTypeItem = outboundMatchItem.MatchScopeItem.MatchScopeType.TargetItem;
             if (scopeTypeItem != null)
             {
-                var scopeTypeItemId = scopeTypeItem.ID;
+                ID scopeTypeItemId = scopeTypeItem.ID;
                 if (scopeTypeItemId.Equals(new ID(Constants.MatchScope_Response_ItemId)))
                 {
                     outboundMatch.MatchingScopeType = ScopeType.Response;
@@ -422,13 +403,13 @@ namespace Hi.UrlRewrite
 
             }
 
-            var outboundMatchScopeItem = outboundMatchItem.OutboundMatchScopeItem.MatchScope.TargetItem;
+            Item outboundMatchScopeItem = outboundMatchItem.OutboundMatchScopeItem.MatchScope.TargetItem;
             if (outboundMatchScopeItem != null)
             {
                 if (outboundMatchScopeItem.TemplateID.Equals(new ID(MatchResponseTagsItem.TemplateId)))
                 {
 
-                    var matchTags = new MatchResponseTagsItem(outboundMatchScopeItem).MatchTheContentWithin.TargetIDs
+                    List<MatchTag> matchTags = new MatchResponseTagsItem(outboundMatchScopeItem).MatchTheContentWithin.TargetIDs
                         .Select(i => outboundMatchItem.InnerItem.Database.GetItem(i))
                         .Select(i => new MatchTagItem(i))
                         .Where(i => i != null)
@@ -458,15 +439,15 @@ namespace Hi.UrlRewrite
 
         public static Condition ToCondition(this BaseConditionItem baseConditionItem)
         {
-            var condition = GetBaseConditionInfo(baseConditionItem);
+            Condition condition = GetBaseConditionInfo(baseConditionItem);
 
             if (condition == null) return null;
 
-            var baseConditionItemTemplateId = baseConditionItem.InnerItem.TemplateID;
+            ID baseConditionItemTemplateId = baseConditionItem.InnerItem.TemplateID;
 
             if (baseConditionItemTemplateId.Equals(new ID(ConditionItem.TemplateId)))
             {
-                var conditionInputItem = new ConditionItem(baseConditionItem).ConditionInputType.TargetItem;
+                Item conditionInputItem = new ConditionItem(baseConditionItem).ConditionInputType.TargetItem;
                 Tokens? conditionInputType = null;
 
                 if (conditionInputItem != null)
@@ -487,7 +468,7 @@ namespace Hi.UrlRewrite
                     }
                 }
 
-                condition.InputString = string.Format("{{{0}}}", conditionInputType);
+                condition.InputString = $"{{{conditionInputType}}}";
             }
             else if (baseConditionItemTemplateId.Equals(new ID(ConditionAdvancedItem.TemplateId)))
             {
@@ -511,7 +492,7 @@ namespace Hi.UrlRewrite
                 IgnoreCase = conditionItem.IgnoreCase.Checked
             };
 
-            var checkIfInputStringItem = conditionItem.CheckIfInputString.TargetItem;
+            Item checkIfInputStringItem = conditionItem.CheckIfInputString.TargetItem;
             CheckIfInputString? checkIfInputStringType = null;
 
             if (checkIfInputStringItem != null)
@@ -528,7 +509,7 @@ namespace Hi.UrlRewrite
                         checkIfInputStringType = CheckIfInputString.IsADirectory;
                         break;
                     case Constants.CheckIfInputStringType_IsNotADirectory_ItemId:
-                        checkIfInputStringType = CheckIfInputString.IsNotADirctory;
+                        checkIfInputStringType = CheckIfInputString.IsNotADirectory;
                         break;
                     case Constants.CheckIfInputStringType_MatchesThePattern_ItemId:
                         checkIfInputStringType = CheckIfInputString.MatchesThePattern;
@@ -551,22 +532,19 @@ namespace Hi.UrlRewrite
 
         public static ServerVariable ToServerVariable(this ServerVariableItem serverVariableItem)
         {
-            var serverVariable = GetBaseServerVariable(serverVariableItem);
-
+            IBaseServerVariable serverVariable = GetBaseServerVariable(serverVariableItem);
             return serverVariable as ServerVariable;
         }
 
         public static RequestHeader ToRequestHeader(this RequestHeaderItem requestHeaderItem)
         {
-            var requestHeader = GetBaseServerVariable(requestHeaderItem);
-
+            IBaseServerVariable requestHeader = GetBaseServerVariable(requestHeaderItem);
             return requestHeader as RequestHeader;
         }
 
         public static ResponseHeader ToResponseHeader(this ResponseHeaderItem responseHeaderItem)
         {
-            var responseHeader = GetBaseServerVariable(responseHeaderItem);
-
+            IBaseServerVariable responseHeader = GetBaseServerVariable(responseHeaderItem);
             return responseHeader as ResponseHeader;
         }
 
@@ -577,12 +555,12 @@ namespace Hi.UrlRewrite
                 return null;
             }
 
-            var templateId = variableItem.TemplateID;
+            ID templateId = variableItem.TemplateID;
             var baseServerVariableItem = new BaseServerVariableItem(variableItem);
-            var variableName = baseServerVariableItem.VariableName.Value;
-            var name = baseServerVariableItem.Name;
-            var value = baseServerVariableItem.Value.Value;
-            var replaceExistingValue = baseServerVariableItem.ReplaceExistingValue.Checked;
+            string variableName = baseServerVariableItem.VariableName.Value;
+            string name = baseServerVariableItem.Name;
+            string value = baseServerVariableItem.Value.Value;
+            bool replaceExistingValue = baseServerVariableItem.ReplaceExistingValue.Checked;
 
             if (templateId.Equals(new ID(ServerVariableItem.TemplateId)))
             {
@@ -639,16 +617,16 @@ namespace Hi.UrlRewrite
 
             GetBaseRewriteUrlItem(redirectItem.BaseRedirectItem.BaseRewriteUrlItem, redirectAction);
 
-            var baseAppendQueryString = redirectItem.BaseRedirectItem.BaseAppendQuerystringItem;
+            BaseAppendQuerystringItem baseAppendQueryString = redirectItem.BaseRedirectItem.BaseAppendQuerystringItem;
             GetBaseAppendQueryStringItem(baseAppendQueryString, redirectAction);
 
-            var stopProcessingItem = redirectItem.BaseRedirectItem.BaseStopProcessingItem;
+            BaseStopProcessingItem stopProcessingItem = redirectItem.BaseRedirectItem.BaseStopProcessingItem;
             GetStopProcessing(stopProcessingItem, redirectAction);
 
-            var redirectTypeItem = redirectItem.BaseRedirectItem.BaseRedirectTypeItem;
+            BaseRedirectTypeItem redirectTypeItem = redirectItem.BaseRedirectItem.BaseRedirectTypeItem;
             GetStatusCode(redirectTypeItem, redirectAction);
 
-            var httpCacheabilityTypeItem = redirectItem.BaseRedirectItem.BaseCacheItem;
+            BaseCacheItem httpCacheabilityTypeItem = redirectItem.BaseRedirectItem.BaseCacheItem;
             GetCacheability(httpCacheabilityTypeItem, redirectAction);
 
             return redirectAction;
@@ -668,10 +646,10 @@ namespace Hi.UrlRewrite
 
             GetBaseRewriteUrlItem(rewriteItem.BaseRewriteItem.BaseRewriteUrlItem, rewriteAction);
 
-            var baseAppendQueryString = rewriteItem.BaseRewriteItem.BaseAppendQuerystringItem;
+            BaseAppendQuerystringItem baseAppendQueryString = rewriteItem.BaseRewriteItem.BaseAppendQuerystringItem;
             GetBaseAppendQueryStringItem(baseAppendQueryString, rewriteAction);
 
-            var stopProcessingItem = rewriteItem.BaseRewriteItem.BaseStopProcessingItem;
+            BaseStopProcessingItem stopProcessingItem = rewriteItem.BaseRewriteItem.BaseStopProcessingItem;
             GetStopProcessing(stopProcessingItem, rewriteAction);
 
             return rewriteAction;
@@ -705,7 +683,7 @@ namespace Hi.UrlRewrite
                 Value = outboundRewriteItem.Value.Value
             };
 
-            var stopProcessingItem = outboundRewriteItem.BaseStopProcessingItem;
+            BaseStopProcessingItem stopProcessingItem = outboundRewriteItem.BaseStopProcessingItem;
             GetStopProcessing(stopProcessingItem, outboundRewriteAction);
 
             return outboundRewriteAction;
@@ -760,16 +738,16 @@ namespace Hi.UrlRewrite
                 ItemQuery = itemQueryRedirectItem.ItemQuery.Value
             };
 
-            var baseAppendQueryString = itemQueryRedirectItem.BaseAppendQuerystringItem;
+            BaseAppendQuerystringItem baseAppendQueryString = itemQueryRedirectItem.BaseAppendQuerystringItem;
             GetBaseAppendQueryStringItem(baseAppendQueryString, itemQueryRedirectAction);
 
-            var stopProcessingItem = itemQueryRedirectItem.BaseStopProcessingItem;
+            BaseStopProcessingItem stopProcessingItem = itemQueryRedirectItem.BaseStopProcessingItem;
             GetStopProcessing(stopProcessingItem, itemQueryRedirectAction);
 
-            var redirectTypeItem = itemQueryRedirectItem.BaseRedirectTypeItem;
+            BaseRedirectTypeItem redirectTypeItem = itemQueryRedirectItem.BaseRedirectTypeItem;
             GetStatusCode(redirectTypeItem, itemQueryRedirectAction);
 
-            var httpCacheabilityTypeItem = itemQueryRedirectItem.BaseCacheItem;
+            BaseCacheItem httpCacheabilityTypeItem = itemQueryRedirectItem.BaseCacheItem;
             GetCacheability(httpCacheabilityTypeItem, itemQueryRedirectAction);
 
             return itemQueryRedirectAction;
@@ -783,7 +761,7 @@ namespace Hi.UrlRewrite
 
         private static void GetBaseRewriteUrlItem(BaseRewriteUrlItem baseRewriteUrlItem, IBaseRewriteUrl redirectAction)
         {
-            var redirectTo = baseRewriteUrlItem.RewriteUrl;
+            LinkField redirectTo = baseRewriteUrlItem.RewriteUrl;
             string actionRewriteUrl;
             Guid? redirectItemId;
             string redirectItemAnchor;
@@ -801,7 +779,7 @@ namespace Hi.UrlRewrite
 
         private static void GetCacheability(BaseCacheItem httpCacheabilityTypeItem, IBaseCache redirectAction)
         {
-            var httpCacheabilityTypeTargetItem = httpCacheabilityTypeItem.HttpCacheability.TargetItem;
+            Item httpCacheabilityTypeTargetItem = httpCacheabilityTypeItem.HttpCacheability.TargetItem;
             HttpCacheability? httpCacheability = null;
             if (httpCacheabilityTypeTargetItem != null)
             {
@@ -834,7 +812,7 @@ namespace Hi.UrlRewrite
 
         private static void GetStatusCode(BaseRedirectTypeItem redirectTypeItem, IBaseStatusCode redirectAction)
         {
-            var redirectTypeTargetItem = redirectTypeItem.RedirectType.TargetItem;
+            Item redirectTypeTargetItem = redirectTypeItem.RedirectType.TargetItem;
             RedirectStatusCode? redirectType = null;
             if (redirectTypeTargetItem != null)
             {
@@ -941,25 +919,28 @@ namespace Hi.UrlRewrite
 
         public static Item[] GetReferrers(this Item item, bool includeStandardValues = false)
         {
-            if (item == null) return new Item[0];
-            var links = Globals.LinkDatabase.GetReferrers(item);
+            if (item == null)
+                return new Item[0];
+
+            ItemLink[] links = Globals.LinkDatabase.GetReferrers(item);
             if (links == null)
                 return new Item[0];
-            var linkedItems = links.Select(i => i.GetSourceItem()).Where(i => i != null);
+
+            IEnumerable<Item> linkedItems = links.Select(i => i.GetSourceItem()).Where(i => i != null);
             if (!includeStandardValues)
                 linkedItems = linkedItems.Where(i => !i.Name.Equals("__Standard Values", StringComparison.InvariantCultureIgnoreCase));
+
             return linkedItems.ToArray();
         }
 
         #region LogObject
 
-        private static LogObject logObject = new LogObject();
+        private static readonly LogObject logObject = new LogObject();
 
         private class LogObject
         {
         }
 
         #endregion
-
     }
 }

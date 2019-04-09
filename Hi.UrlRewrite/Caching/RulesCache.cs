@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using Hi.UrlRewrite.Entities.Rules;
+﻿using Hi.UrlRewrite.Entities.Rules;
 using Sitecore;
 using Sitecore.Caching;
 using Sitecore.Data;
@@ -12,40 +10,39 @@ namespace Hi.UrlRewrite.Caching
     public class RulesCache : CustomCache
     {
         private Database _db;
-        private const string inboundRulesKey = "InboundRules";
-        private const string outboundRulesKey = "OutboundRules";
+        private const string InboundRulesKey = "InboundRules";
+        private const string OutboundRulesKey = "OutboundRules";
 
         public RulesCache(Database db) :
-            base(string.Format("Hi.UrlRewrite[{0}]", db.Name), StringUtil.ParseSizeString(Configuration.CacheSize))
+            base($"Hi.UrlRewrite[{db.Name}]", StringUtil.ParseSizeString(Configuration.CacheSize))
         {
             _db = db;
         }
 
         public List<InboundRule> GetInboundRules()
         {
-            return GetRules<InboundRule>(inboundRulesKey);
+            return GetRules<InboundRule>(InboundRulesKey);
         }
 
         public void SetInboundRules(IEnumerable<InboundRule> inboundRules)
         {
-            SetRules(inboundRules, inboundRulesKey);
+            SetRules(inboundRules, InboundRulesKey);
         }
 
         public List<OutboundRule> GetOutboundRules()
         {
-            return GetRules<OutboundRule>(outboundRulesKey);
+            return GetRules<OutboundRule>(OutboundRulesKey);
         }
 
         public void SetOutboundRules(IEnumerable<OutboundRule> outboundRules)
         {
-            SetRules(outboundRules, outboundRulesKey);
+            SetRules(outboundRules, OutboundRulesKey);
         }
 
         public List<T> GetRules<T>(string key) where T : IBaseRule
         {
             List<T> returnRules = null;
-            var rules = InnerCache.GetValue(key) as IEnumerable<T>;
-            if (rules != null)
+            if (InnerCache.GetValue(key) is IEnumerable<T> rules)
             {
                 returnRules = rules.ToList();
             }
@@ -60,13 +57,12 @@ namespace Hi.UrlRewrite.Caching
 
         public void ClearInboundRules()
         {
-            RemoveKeysContaining(inboundRulesKey);
+            RemoveKeysContaining(InboundRulesKey);
         }
 
         public void ClearOutboundRules()
         {
-            RemoveKeysContaining(outboundRulesKey);
+            RemoveKeysContaining(OutboundRulesKey);
         }
-
     }
 }

@@ -1,15 +1,12 @@
 ﻿using Sitecore.Rules;
 using Sitecore.Rules.Conditions;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Collections.Specialized;
 using Hi.UrlRewrite.Module;
 
 namespace Hi.UrlRewrite.Rules
 {
-    public class OutbounModuleIsInstalled<T> : WhenCondition<T> where T:RuleContext
+    public class OutboundModuleIsInstalled<T> : WhenCondition<T> where T:RuleContext
     {
         protected override bool Execute(T ruleContext)
         {
@@ -20,7 +17,7 @@ namespace Hi.UrlRewrite.Rules
 
         private static bool Check()
         {
-            bool check = false;
+            var check = false;
 
             if (isInstalled.HasValue)
             {
@@ -28,7 +25,7 @@ namespace Hi.UrlRewrite.Rules
             }
             else if (HttpContext.Current != null)
             {
-                var modules = HttpContext.Current.ApplicationInstance.Modules;
+                HttpModuleCollection modules = HttpContext.Current.ApplicationInstance.Modules;
 
                 isInstalled = check = modules.Cast<string>().Any(key => modules[key] is OutboundModule);
             }

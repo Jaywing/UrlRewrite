@@ -1,9 +1,7 @@
-﻿
-namespace Hi.UrlRewrite
+﻿namespace Hi.UrlRewrite
 {
     public static class Constants
     {
-        //public const string RedirectFolderItemsQuery = "fast:{0}//*[@@templateid = '{1}']";
         public const string RewriteFolderSearchQueryDefault = "{0}/descendant-or-self::*[@@templateid = '{1}']";
         public const string RewriteFolderSearchRootDefault = "/sitecore/content";
         public const string TwoTemplateQuery = "*[@@templateid = '{0}' or @@templateid = '{1}']";
@@ -52,7 +50,5 @@ namespace Hi.UrlRewrite
 
         public const string UrlRewriter_ItemId = "{3CF68609-B1F2-4ADE-B7E3-91B5CF74F5B8}";
         public const string RedirectEventItemId = "{1d668f23-eeba-4bd3-93b3-94861ed42060}";
-
-
     }
 }

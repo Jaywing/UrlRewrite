@@ -563,7 +563,7 @@
     <Compile Include="Processing\UrlRewriteItemEventHandler.cs" />
     <Compile Include="Processing\InboundRewriteProcessor.cs" />
     <Compile Include="Processing\InboundRewriter.cs" />
-    <Compile Include="Rules\OutbounModuleIsInstalled.cs" />
+    <Compile Include="Rules\OutboundModuleIsInstalled.cs" />
     <Compile Include="sitecore modules\Shell\UrlRewrite\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

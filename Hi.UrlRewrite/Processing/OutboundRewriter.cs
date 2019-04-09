@@ -8,12 +8,12 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+using Hi.UrlRewrite.Entities.Conditions;
 
 namespace Hi.UrlRewrite.Processing
 {
     public class OutboundRewriter
     {
-
         public NameValueCollection RequestServerVariables { get; set; }
         public NameValueCollection RequestHeaders { get; set; }
         public NameValueCollection ResponseHeaders { get; set; }
@@ -25,8 +25,7 @@ namespace Hi.UrlRewrite.Processing
             ResponseHeaders = new NameValueCollection();
         }
 
-        public void SetupReplacements(NameValueCollection requestServerVariables, NameValueCollection requestHeaders,
-            NameValueCollection responseHeaders)
+        public void SetupReplacements(NameValueCollection requestServerVariables, NameValueCollection requestHeaders, NameValueCollection responseHeaders)
         {
             RequestServerVariables = requestServerVariables;
             RequestHeaders = requestHeaders;
@@ -35,9 +34,8 @@ namespace Hi.UrlRewrite.Processing
 
         public ProcessOutboundRulesResult ProcessContext(HttpContextBase httpContext, string responseString, IEnumerable<OutboundRule> outboundRules)
         {
-
-            if (httpContext == null) throw new ArgumentNullException("httpContext");
-            if (outboundRules == null) throw new ArgumentNullException("outboundRules");
+            if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+            if (outboundRules == null) throw new ArgumentNullException(nameof(outboundRules));
 
             // process outbound rules here... only set up event if it matches rules and preconditions
 
@@ -47,7 +45,7 @@ namespace Hi.UrlRewrite.Processing
                 RewrittenResponseString = responseString
             };
 
-            foreach (var outboundRule in outboundRules)
+            foreach (OutboundRule outboundRule in outboundRules)
             {
                 ruleResult = ProcessOutboundRule(httpContext, ruleResult.RewrittenResponseString, outboundRule);
                 processedResults.Add(ruleResult);
@@ -61,7 +59,6 @@ namespace Hi.UrlRewrite.Processing
                 }
             }
 
-
             // check rule matches
 
             // check conditions
@@ -73,8 +70,6 @@ namespace Hi.UrlRewrite.Processing
 
         private OutboundRuleResult ProcessOutboundRule(HttpContextBase httpContext, string responseString, OutboundRule outboundRule)
         {
-            //Log.Debug(this, "Processing inbound rule - requestUri: {0} inboundRule: {1}", originalUri, inboundRule.Name);
-
             var ruleResult = new OutboundRuleResult()
             {
                 OriginalResponseString = responseString,
@@ -87,7 +82,6 @@ namespace Hi.UrlRewrite.Processing
                 case Using.RegularExpressions:
                 case Using.Wildcards:
                     ruleResult = ProcessRegularExpressionOutboundRule(ruleResult, outboundRule);
-
                     break;
                 //case Using.Wildcards:
                 //    //TODO: Implement Wildcards
@@ -95,21 +89,15 @@ namespace Hi.UrlRewrite.Processing
                 //    break;
             }
 
-            //Log.Debug(this, "Processing inbound rule - requestUri: {0} inboundRule: {1} rewrittenUrl: {2}", ruleResult.OriginalUri, inboundRule.Name, ruleResult.RewrittenUri);
-
-            //ruleResult.ItemId = inboundRule.ItemId;
-
             return ruleResult;
         }
 
         private OutboundRuleResult ProcessRegularExpressionOutboundRule(OutboundRuleResult ruleResult, OutboundRule outboundRule)
         {
-            Match outboundRuleMatch,
-                lastConditionMatch = null;
+            Match outboundRuleMatch, lastConditionMatch = null;
 
             // test rule match
             var isRuleMatch = true;
-            ConditionMatchResult conditionMatchResult = null;
 
             // test conditions matches
             if (outboundRule.Conditions != null && outboundRule.Conditions.Any())
@@ -121,7 +109,7 @@ namespace Hi.UrlRewrite.Processing
                     ResponseHeaders = ResponseHeaders
                 };
 
-                conditionMatchResult = RewriteHelper.TestConditionMatches(outboundRule, replacements, out lastConditionMatch);
+                ConditionMatchResult conditionMatchResult = RewriteHelper.TestConditionMatches(outboundRule, replacements, out lastConditionMatch);
                 isRuleMatch = conditionMatchResult.Matched;
             }
 
@@ -137,15 +125,15 @@ namespace Hi.UrlRewrite.Processing
         public static string ProcessRuleReplacements(string responseString, OutboundRule outboundRule)
         {
             string output = null;
-            var rewritePattern = outboundRule.Pattern;
+            string rewritePattern = outboundRule.Pattern;
+
             // TODO: Not all actions will be OutboundRewriteActions - fix this
             var rewrite = ((OutboundRewrite)outboundRule.Action);
-            var rewriteValue = rewrite.Value;
-            var rewriteMatchScope = outboundRule.OutboundMatchScope;
-            var rewriteMatchScopeType = outboundRule.MatchingScopeType;
+            string rewriteValue = rewrite.Value;
+            IBaseMatchScope rewriteMatchScope = outboundRule.OutboundMatchScope;
+            ScopeType rewriteMatchScopeType = outboundRule.MatchingScopeType;
 
             // TODO: catch invalid Regex compilations
-
             if (rewriteMatchScopeType == ScopeType.Response)
             {
                 IEnumerable<MatchTag> matchTags = new List<MatchTag>();
@@ -203,41 +191,41 @@ namespace Hi.UrlRewrite.Processing
                 @"(?<" + nameKey + @">{0}=)(?<" + startquoteKey + @">""|')(?<" + valueKey + @">.*?)(?<" +
                 endquoteKey + @">""|')";
 
-            var output = responseString;
+            string output = responseString;
 
-            foreach (var matchTag in matchTags)
+            foreach (MatchTag matchTag in matchTags)
             {
-                var tag = matchTag.Tag;
-                var attribute = matchTag.Attribute;
-                var tagPattern = string.Format(tagPatternFormat, tag, attribute);
+                string tag = matchTag.Tag;
+                string attribute = matchTag.Attribute;
+                string tagPattern = string.Format(tagPatternFormat, tag, attribute);
                 var tagRegex = new Regex(tagPattern);
 
                 output = tagRegex.Replace(responseString, tagMatch =>
                 {
-                    var tagMatchGroups = tagMatch.Groups;
-                    var tagStart = tagMatchGroups[startKey].Value;
-                    var tagInnards = tagMatchGroups[innerKey].Value;
-                    var tagEnd = tagMatchGroups[endKey].Value;
-                    var attributePattern = string.Format(attributePatternFormat, attribute);
+                    GroupCollection tagMatchGroups = tagMatch.Groups;
+                    string tagStart = tagMatchGroups[startKey].Value;
+                    string tagInnards = tagMatchGroups[innerKey].Value;
+                    string tagEnd = tagMatchGroups[endKey].Value;
+                    string attributePattern = string.Format(attributePatternFormat, attribute);
                     var attributeRegex = new Regex(attributePattern);
 
-                    var newTagInnards = attributeRegex.Replace(tagInnards, attributeMatch =>
+                    string newTagInnards = attributeRegex.Replace(tagInnards, attributeMatch =>
                     {
-                        var attributeMatchGroups = attributeMatch.Groups;
-                        var attributeValue = attributeMatchGroups[valueKey].Value;
+                        GroupCollection attributeMatchGroups = attributeMatch.Groups;
+                        string attributeValue = attributeMatchGroups[valueKey].Value;
 
                         var attributeValueRegex = new Regex(rewritePattern);
-                        var attributeValueMatch = attributeValueRegex.Match(attributeValue);
+                        Match attributeValueMatch = attributeValueRegex.Match(attributeValue);
 
                         if (attributeValueMatch.Success)
                         {
-                            var attributeName = attributeMatchGroups[nameKey].Value;
-                            var attributeStartQuote = attributeMatchGroups[startquoteKey].Value;
-                            var attributeEndQuote = attributeMatchGroups[endquoteKey].Value;
+                            string attributeName = attributeMatchGroups[nameKey].Value;
+                            string attributeStartQuote = attributeMatchGroups[startquoteKey].Value;
+                            string attributeEndQuote = attributeMatchGroups[endquoteKey].Value;
 
                             // need to determine where the match occurs within the original string
-                            var attributeValueMatchIndex = attributeValueMatch.Index;
-                            var attributeValueMatchLength = attributeValueMatch.Length;
+                            int attributeValueMatchIndex = attributeValueMatch.Index;
+                            int attributeValueMatchLength = attributeValueMatch.Length;
                             string attributeValueReplaced;
 
                             if (outboundRuleUsing == Using.ExactMatch)
@@ -251,12 +239,12 @@ namespace Hi.UrlRewrite.Processing
                                     rewriteValue);
                             }
 
-                            var newAttributeValue = attributeValue.Substring(0, attributeValueMatchIndex) +
+                            string newAttributeValue = attributeValue.Substring(0, attributeValueMatchIndex) +
                                                        attributeValueReplaced +
                                                        attributeValue.Substring(attributeValueMatchIndex +
                                                                                 attributeValueMatchLength);
 
-                            var attributeOutput = attributeName + attributeStartQuote + newAttributeValue +
+                            string attributeOutput = attributeName + attributeStartQuote + newAttributeValue +
                                                   attributeEndQuote;
 
                             return attributeOutput;
@@ -265,7 +253,7 @@ namespace Hi.UrlRewrite.Processing
                         return attributeMatch.Value;
                     });
 
-                    var tagOutput = tagStart + newTagInnards + tagEnd;
+                    string tagOutput = tagStart + newTagInnards + tagEnd;
 
                     return tagOutput;
                 });
@@ -275,16 +263,13 @@ namespace Hi.UrlRewrite.Processing
 
         internal PreconditionResult CheckPreconditions(HttpContextBase httpContext, List<OutboundRule> outboundRules)
         {
+            var isPreconditionMatch = false;
 
-            Match lastConditionMatch = null;
-            bool isPreconditionMatch = false;
+            IEnumerable<Precondition> preconditions = outboundRules.Select(p => p.Precondition).Where(p => p != null);
 
-            var preconditions = outboundRules.Select(p => p.Precondition)
-                .Where(p => p != null);
-
-            foreach (var precondition in preconditions)
+            foreach (Precondition precondition in preconditions)
             {
-                var conditions = precondition.Conditions;
+                IEnumerable<Condition> conditions = precondition.Conditions;
 
                 // test conditions matches
                 if (conditions != null && conditions.Any())
@@ -295,7 +280,7 @@ namespace Hi.UrlRewrite.Processing
                         RequestHeaders = httpContext.Request.Headers,
                         ResponseHeaders = httpContext.Response.Headers
                     };
-                    var conditionMatchResult = RewriteHelper.TestConditionMatches(precondition, replacements, out lastConditionMatch);
+                    ConditionMatchResult conditionMatchResult = RewriteHelper.TestConditionMatches(precondition, replacements, out Match _);
                     isPreconditionMatch = conditionMatchResult.Matched;
                 }
             }
@@ -307,15 +292,13 @@ namespace Hi.UrlRewrite.Processing
 
         internal bool CheckPrecondition(HttpContextBase httpContext, OutboundRule outboundRule)
         {
-
-            Match lastConditionMatch = null;
-            bool isPreconditionMatch = true;
+            var isPreconditionMatch = true;
 
             if (outboundRule == null) return isPreconditionMatch;
-            var precondition = outboundRule.Precondition;
+            Precondition precondition = outboundRule.Precondition;
 
             if (precondition == null) return isPreconditionMatch;
-            var conditions = precondition.Conditions;
+            IEnumerable<Condition> conditions = precondition.Conditions;
 
             // test conditions matches
             if (conditions != null && conditions.Any())
@@ -326,7 +309,7 @@ namespace Hi.UrlRewrite.Processing
                     RequestHeaders = httpContext.Request.Headers,
                     ResponseHeaders = httpContext.Response.Headers
                 };
-                var conditionMatchResult = RewriteHelper.TestConditionMatches(precondition, replacements, out lastConditionMatch);
+                ConditionMatchResult conditionMatchResult = RewriteHelper.TestConditionMatches(precondition, replacements, out Match _);
                 isPreconditionMatch = conditionMatchResult.Matched;
             }
 

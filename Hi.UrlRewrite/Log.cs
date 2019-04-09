@@ -1,9 +1,5 @@
 ﻿using Sitecore.Data;
-using Sitecore.Diagnostics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using SLog = Sitecore.Diagnostics.Log;
 
 namespace Hi.UrlRewrite
@@ -71,7 +67,7 @@ namespace Hi.UrlRewrite
 
         private static string Format(string format, object[] args)
         {
-            var db = Sitecore.Context.Database;
+            Database db = Sitecore.Context.Database;
             if (db != null)
             {
                 return Format(db, format, args);
@@ -89,6 +85,5 @@ namespace Hi.UrlRewrite
 
             return string.Format(LogNameDbFormat, database.Name) + Divider + string.Format(format, args);
         }
-
     }
 }

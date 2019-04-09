@@ -10,7 +10,6 @@ namespace Hi.UrlRewrite.Entities.Actions.Base
         Guid? RewriteItemId { get; set; }
         string RewriteItemAnchor { get; set; }
         bool AppendQueryString { get; set; }
-
         HttpCacheability? HttpCacheability { get; set; }
         bool StopProcessingOfSubsequentRules { get; set; }
         RedirectStatusCode? StatusCode { get; set; }

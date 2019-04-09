@@ -8,78 +8,43 @@ namespace Hi.UrlRewrite.Processing.Results
 {
     public class ProcessInboundRulesResult
     {
-
-        private readonly Uri _originalUri;
-        private readonly Uri _rewrittenUri;
-        private readonly IBaseAction _finalAction;
-        private readonly List<InboundRuleResult> _processedResults;
-        private readonly Guid? _itemId;
-
         public ProcessInboundRulesResult(Uri originalUri, List<InboundRuleResult> processedResults)
         {
-            _originalUri = originalUri;
-            _processedResults = processedResults;
-            var lastMatchedResult = _processedResults.LastOrDefault(r => r.RuleMatched);
+            OriginalUri = originalUri;
+            ProcessedResults = processedResults;
+            InboundRuleResult lastMatchedResult = ProcessedResults.LastOrDefault(r => r.RuleMatched);
 
             if (lastMatchedResult != null)
             {
-                _rewrittenUri = lastMatchedResult.RewrittenUri;
-                _finalAction = lastMatchedResult.ResultAction;
-                _itemId = lastMatchedResult.ItemId;
+                RewrittenUri = lastMatchedResult.RewrittenUri;
+                FinalAction = lastMatchedResult.ResultAction;
+                ItemId = lastMatchedResult.ItemId;
             }
         }
 
-        public Guid? ItemId
-        {
-            get
-            {
-                return _itemId;
-            }
-        }
+        public Guid? ItemId { get; }
 
-        public Uri OriginalUri
-        {
-            get
-            {
-                return _originalUri;
-            }
-        }
+        public Uri OriginalUri { get; }
 
-        public Uri RewrittenUri
-        {
-            get
-            {
-                return _rewrittenUri;
-            }
-        }
+        public Uri RewrittenUri { get; }
 
-        public IBaseAction FinalAction
-        {
-            get
-            {
-                return _finalAction;
-            }
-        }
+        public IBaseAction FinalAction { get; }
+
+        public List<InboundRuleResult> ProcessedResults { get; }
 
         public int? StatusCode 
         { 
-            get 
+            get
             {
-                if (FinalAction is Redirect)
+                switch (FinalAction)
                 {
-                    var redirectAction = FinalAction as Redirect;
-                    if (redirectAction.StatusCode.HasValue)
-                    {
+                    case Redirect redirectAction when redirectAction.StatusCode.HasValue:
                         return (int) (redirectAction.StatusCode.Value);
-                    }
+                    case CustomResponse customResponse:
+                        return customResponse.StatusCode;
+                    default:
+                        return null;
                 }
-                else if (FinalAction is CustomResponse)
-                {
-                    var customResponse = FinalAction as CustomResponse;
-                    return customResponse.StatusCode;
-                }
-
-                return null;
             }
         }
 
@@ -90,14 +55,5 @@ namespace Hi.UrlRewrite.Processing.Results
                 return ProcessedResults != null && ProcessedResults.Any(e => e.RuleMatched);
             }
         }
-
-        public List<InboundRuleResult> ProcessedResults
-        {
-            get
-            {
-                return _processedResults;
-            }
-        }
-
     }
 }

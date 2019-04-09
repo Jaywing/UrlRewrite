@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Web;
-using Sitecore.Shell.Feeds.Sections;
 
 namespace Hi.UrlRewrite.Module
 {
@@ -22,26 +19,25 @@ namespace Hi.UrlRewrite.Module
         /// <summary>
         /// The original stream
         /// </summary>
-        Stream _stream;
+        private readonly Stream _stream;
 
         /// <summary>
         /// Current position in the original stream
         /// </summary>
-        long _position;
+        private long _position;
 
         /// <summary>
         /// Stream that original content is read into
         /// and then passed to TransformStream function
         /// </summary>
-        MemoryStream _cacheStream = new MemoryStream(5000);
+        private MemoryStream _cacheStream = new MemoryStream(5000);
 
         /// <summary>
         /// Internal pointer that that keeps track of the size
         /// of the cacheStream
         /// </summary>
-        int _cachePointer = 0;
-
-
+        private int _cachePointer = 0;
+        
         /// <summary>
         /// 
         /// </summary>
@@ -51,39 +47,19 @@ namespace Hi.UrlRewrite.Module
             _stream = responseStream;
         }
 
-
         /// <summary>
         /// Determines whether the stream is captured
         /// </summary>
-        private bool IsCaptured
-        {
-            get
-            {
-
-                if (CaptureStream != null || CaptureString != null ||
-                    TransformStream != null || TransformString != null)
-                    return true;
-
-                return false;
-            }
-        }
+        private bool IsCaptured =>
+            CaptureStream != null || CaptureString != null ||
+            TransformStream != null || TransformString != null;
 
         /// <summary>
         /// Determines whether the Write method is outputting data immediately
         /// or delaying output until Flush() is fired.
         /// </summary>
-        private bool IsOutputDelayed
-        {
-            get
-            {
-                if (TransformStream != null || TransformString != null)
-                    return true;
-
-                return false;
-            }
-        }
-
-
+        private bool IsOutputDelayed => TransformStream != null || TransformString != null;
+        
         /// <summary>
         /// Event that captures Response output and makes it available
         /// as a MemoryStream instance. Output is captured but won't 
@@ -96,9 +72,7 @@ namespace Hi.UrlRewrite.Module
         /// as a string. Output is captured but won't affect Response output.
         /// </summary>
         public event Action<string> CaptureString;
-
-
-
+        
         /// <summary>
         /// Event that allows you transform the stream as each chunk of
         /// the output is written in the Write() operation of the stream.
@@ -110,8 +84,7 @@ namespace Hi.UrlRewrite.Module
         /// operation.
         /// </summary>
         public event Func<byte[], byte[]> TransformWrite;
-
-
+        
         /// <summary>
         /// Event that allows you to transform the response stream as
         /// each chunk of bytep[] output is written during the stream's write
@@ -142,8 +115,7 @@ namespace Hi.UrlRewrite.Module
 
         protected virtual void OnCaptureStream(MemoryStream ms)
         {
-            if (CaptureStream != null)
-                CaptureStream(ms);
+            CaptureStream?.Invoke(ms);
         }
 
 
@@ -158,15 +130,12 @@ namespace Hi.UrlRewrite.Module
 
         protected virtual void OnCaptureString(string output)
         {
-            if (CaptureString != null)
-                CaptureString(output);
+            CaptureString?.Invoke(output);
         }
 
         protected virtual byte[] OnTransformWrite(byte[] buffer)
         {
-            if (TransformWrite != null)
-                return TransformWrite(buffer);
-            return buffer;
+            return TransformWrite != null ? TransformWrite(buffer) : buffer;
         }
 
         private byte[] OnTransformWriteStringInternal(byte[] buffer)
@@ -178,23 +147,15 @@ namespace Hi.UrlRewrite.Module
 
         private string OnTransformWriteString(string value)
         {
-            if (TransformWriteString != null)
-                return TransformWriteString(value);
-            return value;
+            return TransformWriteString != null ? TransformWriteString(value) : value;
         }
 
 
         protected virtual MemoryStream OnTransformCompleteStream(MemoryStream ms)
         {
-            if (TransformStream != null)
-                return TransformStream(ms);
-
-            return ms;
+            return TransformStream != null ? TransformStream(ms) : ms;
         }
-
-
-
-
+        
         /// <summary>
         /// Allows transforming of strings
         /// 
@@ -207,9 +168,7 @@ namespace Hi.UrlRewrite.Module
         /// <returns></returns>
         private string OnTransformCompleteString(string responseText)
         {
-            if (TransformString != null)
-                TransformString(responseText);
-
+            TransformString?.Invoke(responseText);
             return responseText;
         }
 
@@ -224,49 +183,24 @@ namespace Hi.UrlRewrite.Module
             if (TransformString == null)
                 return ms;
 
-            //string content = ms.GetAsString();
             string content = HttpContext.Current.Response.ContentEncoding.GetString(ms.ToArray());
 
             content = TransformString(content);
             byte[] buffer = HttpContext.Current.Response.ContentEncoding.GetBytes(content);
             ms = new MemoryStream();
             ms.Write(buffer, 0, buffer.Length);
-            //ms.WriteString(content);
 
             return ms;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool CanRead
-        {
-            get { return true; }
-        }
+        public override bool CanRead => true;
 
-        public override bool CanSeek
-        {
-            get { return true; }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool CanWrite
-        {
-            get { return true; }
-        }
+        public override bool CanSeek => true;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public override long Length
-        {
-            get { return 0; }
-        }
+        public override bool CanWrite => true;
 
-        /// <summary>
-        /// 
-        /// </summary>
+        public override long Length => 0;
+
         public override long Position
         {
             get { return _position; }
@@ -306,7 +240,6 @@ namespace Hi.UrlRewrite.Module
         /// </summary>
         public override void Flush()
         {
-
             if (IsCaptured && _cacheStream.Length > 0)
             {
                 // Check for transform implementations
@@ -339,8 +272,7 @@ namespace Hi.UrlRewrite.Module
         {
             return _stream.Read(buffer, offset, count);
         }
-
-
+        
         /// <summary>
         /// Overriden to capture output written by ASP.NET and captured
         /// into a cached stream that is written out later when Flush()
@@ -351,10 +283,7 @@ namespace Hi.UrlRewrite.Module
         /// <param name="count"></param>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            if (HeadersWritten != null)
-            {
-                HeadersWritten(new HttpContextWrapper(HttpContext.Current));
-            }
+            HeadersWritten?.Invoke(new HttpContextWrapper(HttpContext.Current));
 
             if (IsCaptured)
             {
@@ -371,8 +300,6 @@ namespace Hi.UrlRewrite.Module
 
             if (!IsOutputDelayed)
                 _stream.Write(buffer, offset, buffer.Length);
-
         }
-
     }
 }

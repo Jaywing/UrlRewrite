@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Web;
+using Hi.UrlRewrite.Entities.Rules;
 using Hi.UrlRewrite.Processing.Results;
 using Sitecore.Data;
 using Sitecore.Sites;
@@ -11,17 +11,15 @@ namespace Hi.UrlRewrite.Processing
 {
     public class InboundRulesHelper
     {
-
         public ProcessInboundRulesResult GetUrlResults(string url, Database database, NameValueCollection serverVariables = null)
         {
             var rewriter = new InboundRewriter();
 
             var rulesEngine = new RulesEngine(database);
-            var inboundRules = rulesEngine.GetInboundRules();
+            List<InboundRule> inboundRules = rulesEngine.GetInboundRules();
 
             var requestUri = new Uri(url);
-            var siteContext = SiteContextFactory.GetSiteContext(requestUri.Host, requestUri.AbsolutePath,
-                requestUri.Port);
+            SiteContext siteContext = SiteContextFactory.GetSiteContext(requestUri.Host, requestUri.AbsolutePath, requestUri.Port);
 
             rewriter.RequestServerVariables = serverVariables ?? new NameValueCollection();
 
@@ -40,10 +38,9 @@ namespace Hi.UrlRewrite.Processing
                 rewriter.RequestServerVariables.Add("QUERY_STRING", requestUri.Query.Remove(0, 1));
             }
 
-            var results = rewriter.ProcessRequestUrl(requestUri, inboundRules, siteContext, database);
+            ProcessInboundRulesResult results = rewriter.ProcessRequestUrl(requestUri, inboundRules, siteContext, database);
 
             return results;
         }
-
     }
 }
