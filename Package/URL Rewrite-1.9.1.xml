@@ -3,13 +3,15 @@
     <metadata>
       <PackageName>URL Rewrite</PackageName>
       <Author>Jaywing</Author>
-      <Version>1.9.0.2</Version>
+      <Version>1.9.1</Version>
       <Revision />
       <License />
       <Comment />
       <Attributes />
       <Readme>Url Rewrite
 ===========
+
+A fork of Andy Cohen's Url Rewrite Sitecore module updated for Sitecore 9.x.
 
 While there are many Redirect / Rewrite modules available in the Sitecore Marketplace, I created this one to address the fact that most of them cannot create redirects that are Site specific.
 
@@ -18,6 +20,9 @@ In addition to adding Site specific redirect capabilities, I have modeled the da
 
 Changelog
 =========
+Version 1.9.1 -
+* Added support for Sitecore 9.1
+
 Version 1.9.0.2 -
 * Added support for Sitecore 9.0 update 2
 
@@ -263,16 +268,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -320,16 +316,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -377,16 +364,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -434,16 +412,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -548,16 +517,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -605,16 +565,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -662,16 +613,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -776,16 +718,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -833,16 +766,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -1004,16 +928,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
@@ -1118,16 +1033,7 @@ Version 1.0
       <SkipVersions>False</SkipVersions>
       <Converter>
         <ItemToEntryConverter>
-          <Transforms>
-            <InstallerConfigurationTransform>
-              <Options>
-                <BehaviourOptions>
-                  <ItemMode>Undefined</ItemMode>
-                  <ItemMergeMode>Undefined</ItemMergeMode>
-                </BehaviourOptions>
-              </Options>
-            </InstallerConfigurationTransform>
-          </Transforms>
+          <Transforms />
         </ItemToEntryConverter>
       </Converter>
       <Include>
