@@ -1,30 +1,20 @@
-using Hi.UrlRewrite.Templates.Settings;
 using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Folders
 {
-    public partial class RedirectSubFolderItem : CustomItem
+    public class RedirectSubFolderItem : CustomItem
     {
+        public const string TemplateId = "{9461E537-8E89-4B91-896A-1F2C3AF4A3D5}";
 
-        public static readonly string TemplateId = "{9461E537-8E89-4B91-896A-1F2C3AF4A3D5}";
+        public FolderItem FolderItem { get; }
 
-        #region Inherited Base Templates
-
-        private readonly FolderItem _FolderItem;
-        public FolderItem FolderItem { get { return _FolderItem; } }
-
-        private readonly BaseUrlRewriteItem _BaseUrlRewriteItem;
-        public BaseUrlRewriteItem BaseUrlRewriteItem { get { return _BaseUrlRewriteItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseUrlRewriteItem BaseUrlRewriteItem { get; }
 
         public RedirectSubFolderItem(Item innerItem)
             : base(innerItem)
         {
-            _FolderItem = new FolderItem(innerItem);
-            _BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
+            FolderItem = new FolderItem(innerItem);
+            BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
         
         }
 
@@ -35,12 +25,7 @@ namespace Hi.UrlRewrite.Templates.Folders
 
         public static implicit operator Item(RedirectSubFolderItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
     }
 }
-

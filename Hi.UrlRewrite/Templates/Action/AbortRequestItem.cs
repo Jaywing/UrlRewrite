@@ -1,31 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hi.UrlRewrite.Templates.Action.Base;
+﻿using Hi.UrlRewrite.Templates.Action.Base;
 using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Action
 {
-    public partial class AbortRequestItem : CustomItem
+    public class AbortRequestItem : CustomItem
     {
+        public const string TemplateId = "{BD8E6E5E-62F8-4397-99CA-B0502AFD14B9}";
 
-        public static readonly string TemplateId = "{BD8E6E5E-62F8-4397-99CA-B0502AFD14B9}";
-
-        #region Inherited Base Templates
-
-        private readonly BaseActionItem _BaseActionItem;
-        public BaseActionItem BaseActionItem { get { return _BaseActionItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseActionItem BaseActionItem { get; }
 
         public AbortRequestItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseActionItem = new BaseActionItem(innerItem);
+            BaseActionItem = new BaseActionItem(innerItem);
         }
 
         public static implicit operator AbortRequestItem(Item innerItem)
@@ -35,9 +22,7 @@ namespace Hi.UrlRewrite.Templates.Action
 
         public static implicit operator Item(AbortRequestItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
     }
 }

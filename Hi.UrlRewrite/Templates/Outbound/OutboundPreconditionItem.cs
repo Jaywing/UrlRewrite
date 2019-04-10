@@ -5,11 +5,7 @@ namespace Hi.UrlRewrite.Templates.Outbound
 {
     public class OutboundPreconditionItem : CustomItem
     {
-        public static readonly string TemplateId = "{542B92EE-1A9C-48FC-A81B-B034CB6AE368}";
-
-        #region Inherited Base Templates
-
-        #endregion
+        public const string TemplateId = "{542B92EE-1A9C-48FC-A81B-B034CB6AE368}";
 
         public OutboundPreconditionItem(Item innerItem)
             : base(innerItem)
@@ -24,16 +20,9 @@ namespace Hi.UrlRewrite.Templates.Outbound
 
         public static implicit operator Item(OutboundPreconditionItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        public LookupField Precondition
-        {
-            get
-            {
-                return new LookupField(InnerItem.Fields["Precondition"]);
-            }
-        }
-            
+        public LookupField Precondition => new LookupField(InnerItem.Fields["Precondition"]);
     }
 }

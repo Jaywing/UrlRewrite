@@ -42,7 +42,7 @@ namespace Hi.UrlRewrite.Processing
         {
             if (inboundRules == null)
             {
-                throw new ArgumentNullException("inboundRules");
+                throw new ArgumentNullException(nameof(inboundRules));
             }
 
             Uri originalUri = requestUri;
@@ -70,7 +70,7 @@ namespace Hi.UrlRewrite.Processing
                 }
             }
 
-            // TODO: log more information about what actually hapenned - this currently only reflects rewrites/redirects
+            // TODO: log more information about what actually happened - this currently only reflects rewrites/redirects
             Log.Debug(this, "Processed originalUrl: {0} redirectedUrl: {1}", originalUri, ruleResult.RewrittenUri);
 
             var finalResult = new ProcessInboundRulesResult(originalUri, processedResults);
@@ -123,14 +123,13 @@ namespace Hi.UrlRewrite.Processing
                 httpResponse.Headers.Set(responseHeader.VariableName, responseHeaderValue);
             }
 
-            if (ruleResult.FinalAction is IBaseRedirect)
+            if (ruleResult.FinalAction is IBaseRedirect redirectAction)
             {
                 if (Configuration.AnalyticsTrackingEnabled)
                 {
                     Tracking.TrackRedirect(ruleResult);
                 }
 
-                var redirectAction = ruleResult.FinalAction as IBaseRedirect;
                 int statusCode;
 
                 if (redirectAction.StatusCode.HasValue)
@@ -223,10 +222,10 @@ namespace Hi.UrlRewrite.Processing
                 RewrittenUri = originalUri
             };
 
-            Match inboundRuleMatch, lastConditionMatch = null;
+            Match lastConditionMatch = null;
 
             // test rule match
-            bool isInboundRuleMatch = TestRuleMatches(inboundRule, originalUri, out inboundRuleMatch);
+            bool isInboundRuleMatch = TestRuleMatches(inboundRule, originalUri, out Match inboundRuleMatch);
             ConditionMatchResult conditionMatchResult = null;
 
             // test conditions matches

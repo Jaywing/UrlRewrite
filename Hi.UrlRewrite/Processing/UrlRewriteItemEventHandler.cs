@@ -7,14 +7,12 @@ using Sitecore.Events;
 using Sitecore.SecurityModel;
 using System;
 using System.Linq;
+using Hi.UrlRewrite.Extensions;
 
 namespace Hi.UrlRewrite.Processing
 {
     public class UrlRewriteItemEventHandler
     {
-
-        #region ItemSaved
-
         public void OnItemSaved(object sender, EventArgs args)
         {
             var item = Event.ExtractParameter(args, 0) as Item;
@@ -74,7 +72,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsSimpleRedirectItem())
                     {
-	                    if (rulesEngine.CanRefreshInboundRule(item, redirectFolderItem))
+	                    if (rulesEngine.CanRefreshInboundRule(item))
 	                    {
 		                    Log.Info(this, db, "Refreshing Simple Redirect [{0}] after save event", item.Paths.FullPath);
 
@@ -89,7 +87,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsInboundRuleItem())
                     {
-						if (rulesEngine.CanRefreshInboundRule(item, redirectFolderItem))
+						if (rulesEngine.CanRefreshInboundRule(item))
 						{
 							Log.Info(this, db, "Refreshing Inbound Rule [{0}] after save event", item.Paths.FullPath);
 
@@ -113,7 +111,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsInboundRuleItemChild())
                     {
-						if (rulesEngine.CanRefreshInboundRule(item.Parent, redirectFolderItem))
+						if (rulesEngine.CanRefreshInboundRule(item.Parent))
 						{
 							Log.Info(this, db, "Refreshing Inbound Rule [{0}] after save event", item.Parent.Paths.FullPath);
 
@@ -144,10 +142,6 @@ namespace Hi.UrlRewrite.Processing
 	    {
 		    return item.Axes.GetAncestors().FirstOrDefault(a => a.TemplateID.Equals(new ID(RedirectFolderItem.TemplateId)));
 	    }
-
-	    #endregion
-
-        #region ItemDeleted
 
         public void OnItemDeleted(object sender, EventArgs args)
         {
@@ -204,7 +198,6 @@ namespace Hi.UrlRewrite.Processing
 
 						rulesEngine.ClearOutboundRuleCache();
 					}
-
                 }
             }
             catch (Exception ex)
@@ -212,7 +205,5 @@ namespace Hi.UrlRewrite.Processing
                 Log.Error(this, ex, item.Database, "Exception occured which deleting item after publish Item ID: {0} Item Path: {1}", item.ID, item.Paths.FullPath);
             }
         }
-
-        #endregion
     }
 }

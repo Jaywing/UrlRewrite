@@ -17,7 +17,7 @@ namespace Hi.UrlRewrite.Analytics
             tracking.RegisterEventOnRedirect(results);
         }
 
-        public void RegisterEventOnRedirect(ProcessInboundRulesResult results)
+        private void RegisterEventOnRedirect(ProcessInboundRulesResult results)
         {
             if (!Tracker.Enabled)
                 return;
@@ -27,7 +27,6 @@ namespace Hi.UrlRewrite.Analytics
 
             try
             {
-
                 foreach (InboundRuleResult result in results.ProcessedResults.Where(e => e.RuleMatched))
                 {
                     Guid itemId = result.ItemId;

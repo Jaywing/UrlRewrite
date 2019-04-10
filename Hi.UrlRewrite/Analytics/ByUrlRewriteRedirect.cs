@@ -26,7 +26,7 @@ namespace Hi.UrlRewrite.Analytics
         public override bool Filter(PageEventData pageEvent)
         {
             Assert.IsNotNull(pageEvent, "pageEvent");
-            return pageEvent.PageEventDefinitionId.Equals(this._redirectEventId);
+            return pageEvent.PageEventDefinitionId.Equals(_redirectEventId);
         }
     }
 }

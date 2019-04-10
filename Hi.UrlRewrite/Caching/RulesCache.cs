@@ -9,14 +9,28 @@ namespace Hi.UrlRewrite.Caching
 {
     public class RulesCache : CustomCache
     {
-        private Database _db;
         private const string InboundRulesKey = "InboundRules";
         private const string OutboundRulesKey = "OutboundRules";
 
         public RulesCache(Database db) :
             base($"Hi.UrlRewrite[{db.Name}]", StringUtil.ParseSizeString(Configuration.CacheSize))
         {
-            _db = db;
+        }
+
+        private List<T> GetRules<T>(string key) where T : IBaseRule
+        {
+            List<T> returnRules = null;
+            if (InnerCache.GetValue(key) is IEnumerable<T> rules)
+            {
+                returnRules = rules.ToList();
+            }
+
+            return returnRules;
+        }
+
+        private void SetRules<T>(IEnumerable<T> outboundRules, string key) where T : IBaseRule
+        {
+            InnerCache.Add(key, outboundRules);
         }
 
         public List<InboundRule> GetInboundRules()
@@ -38,23 +52,7 @@ namespace Hi.UrlRewrite.Caching
         {
             SetRules(outboundRules, OutboundRulesKey);
         }
-
-        public List<T> GetRules<T>(string key) where T : IBaseRule
-        {
-            List<T> returnRules = null;
-            if (InnerCache.GetValue(key) is IEnumerable<T> rules)
-            {
-                returnRules = rules.ToList();
-            }
-
-            return returnRules;
-        }
-
-        public void SetRules<T>(IEnumerable<T> outboundRules, string key) where T : IBaseRule
-        {
-            InnerCache.Add(key, outboundRules);
-        }
-
+        
         public void ClearInboundRules()
         {
             RemoveKeysContaining(InboundRulesKey);

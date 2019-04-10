@@ -7,6 +7,7 @@ using Hi.UrlRewrite.Entities.Actions;
 using Hi.UrlRewrite.Entities.Conditions;
 using Hi.UrlRewrite.Entities.Match;
 using Hi.UrlRewrite.Entities.Rules;
+using Hi.UrlRewrite.Extensions;
 using Hi.UrlRewrite.Templates.Folders;
 using Hi.UrlRewrite.Templates.Inbound;
 using Hi.UrlRewrite.Templates.Outbound;
@@ -19,7 +20,7 @@ namespace Hi.UrlRewrite.Processing
 {
 	public class RulesEngine
     {
-        public Database Database { get; }
+        private Database Database { get; }
 
         public RulesEngine(Database db)
         {
@@ -107,7 +108,7 @@ namespace Hi.UrlRewrite.Processing
 
             var outboundRules = new List<OutboundRule>();
 
-            foreach (var redirectFolderItem in redirectFolderItems)
+            foreach (Item redirectFolderItem in redirectFolderItems)
             {
                 Log.Debug(this, Database, "Loading Outbound Rules from RedirectFolder: {0}", redirectFolderItem.Name);
 
@@ -122,7 +123,7 @@ namespace Hi.UrlRewrite.Processing
 
                         Log.Debug(this, Database, "Loading OutboundRule: {0}", outboundRuleItem.Name);
 
-                        OutboundRule outboundRule = CreateOutboundRuleFromOutboundRuleItem(outboundRuleItem, redirectFolderItem);
+                        OutboundRule outboundRule = CreateOutboundRuleFromOutboundRuleItem(outboundRuleItem);
 
                         if (outboundRule != null && outboundRule.Enabled)
                         {
@@ -144,8 +145,7 @@ namespace Hi.UrlRewrite.Processing
             return redirectFolderItems;
         }
 
-        #region Serialization 
-        internal InboundRule CreateInboundRuleFromSimpleRedirectItem(SimpleRedirectItem simpleRedirectItem, RedirectFolderItem redirectFolderItem)
+        private InboundRule CreateInboundRuleFromSimpleRedirectItem(SimpleRedirectItem simpleRedirectItem, RedirectFolderItem redirectFolderItem)
         {
             string inboundRulePattern = $"^{simpleRedirectItem.Path.Value}/?$";
             string siteNameRestriction = GetSiteNameRestriction(redirectFolderItem);
@@ -184,7 +184,7 @@ namespace Hi.UrlRewrite.Processing
             return inboundRule;
         }
 
-        internal InboundRule CreateInboundRuleFromInboundRuleItem(InboundRuleItem inboundRuleItem, RedirectFolderItem redirectFolderItem)
+        private static InboundRule CreateInboundRuleFromInboundRuleItem(InboundRuleItem inboundRuleItem, RedirectFolderItem redirectFolderItem)
         {
             string siteNameRestriction = GetSiteNameRestriction(redirectFolderItem);
             InboundRule inboundRule = inboundRuleItem.ToInboundRule(siteNameRestriction);
@@ -192,14 +192,13 @@ namespace Hi.UrlRewrite.Processing
             return inboundRule;
         }
 
-        internal OutboundRule CreateOutboundRuleFromOutboundRuleItem(OutboundRuleItem outboundRuleItem,
-            RedirectFolderItem redirectFolderItem)
+        private static OutboundRule CreateOutboundRuleFromOutboundRuleItem(OutboundRuleItem outboundRuleItem)
         {
             OutboundRule outboundRule = outboundRuleItem.ToOutboundRule();
             return outboundRule;
         }
 
-        internal static string GetSiteNameRestriction(RedirectFolderItem redirectFolder)
+        private static string GetSiteNameRestriction(RedirectFolderItem redirectFolder)
         {
             string site = redirectFolder.SiteNameRestriction.Value;
             return site;
@@ -221,11 +220,7 @@ namespace Hi.UrlRewrite.Processing
                 actionRewriteUrl = redirectTo.Url;
             }
         }
-
-        #endregion
-
-        #region Caching
-
+ 
         private RulesCache GetRulesCache()
         {
             return RulesCacheManager.GetCache(Database);
@@ -272,7 +267,7 @@ namespace Hi.UrlRewrite.Processing
 		/// <summary>
 		/// Checks to see whether this individual inbound rule can be updated without refreshing all rules
 		/// </summary>
-	    internal bool CanRefreshInboundRule(Item item, Item redirectFolderItem)
+	    internal bool CanRefreshInboundRule(Item item)
 	    {
 		    var result = false;
 
@@ -287,8 +282,7 @@ namespace Hi.UrlRewrite.Processing
 
 		    return result;
 	    }
-
-
+        
 		internal void RefreshRule(Item item, Item redirectFolderItem)
         {
             UpdateRulesCache(item, redirectFolderItem, AddRule);
@@ -348,7 +342,7 @@ namespace Hi.UrlRewrite.Processing
             }
             else if (item.IsOutboundRuleItem())
             {
-                newRule = CreateOutboundRuleFromOutboundRuleItem(item, redirectFolderItem);
+                newRule = CreateOutboundRuleFromOutboundRuleItem(item);
             }
 
             if (newRule != null)
@@ -412,6 +406,5 @@ namespace Hi.UrlRewrite.Processing
 			RulesCache cache = GetRulesCache();
 			cache.ClearOutboundRules();
 		}
-		#endregion
 	}
 }

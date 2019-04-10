@@ -1,29 +1,17 @@
-using System;
 using Sitecore.Data.Items;
-using System.Collections.Generic;
-using Sitecore.Data.Fields;
-using Sitecore.Web.UI.WebControls;
 
 namespace Hi.UrlRewrite.Templates.Action.Base
 {
-    public partial class BaseActionItem : CustomItem
+    public class BaseActionItem : CustomItem
     {
+        public const string TemplateId = "{5C9153F1-6CDD-40C7-9670-1D1DCA23E784}";
 
-        public static readonly string TemplateId = "{5C9153F1-6CDD-40C7-9670-1D1DCA23E784}";
-
-        #region Inherited Base Templates
-
-        private readonly BaseUrlRewriteItem _BaseUrlRewriteItem;
-        public BaseUrlRewriteItem BaseUrlRewriteItem { get { return _BaseUrlRewriteItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseUrlRewriteItem BaseUrlRewriteItem { get; }
 
         public BaseActionItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
+            BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
 
         }
 
@@ -34,15 +22,7 @@ namespace Hi.UrlRewrite.Templates.Action.Base
 
         public static implicit operator Item(BaseActionItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-
-        #endregion //Field Instance Methods
     }
 }

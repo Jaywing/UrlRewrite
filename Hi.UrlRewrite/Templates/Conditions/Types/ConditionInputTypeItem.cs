@@ -2,14 +2,10 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Conditions.Types
 {
-    public partial class ConditionInputTypeItem : CustomItem
+    public class ConditionInputTypeItem : CustomItem
     {
-
-        public static readonly string TemplateId = "{01A28131-5CC9-4419-BD14-351922CE9416}";
-
-
-        #region Boilerplate CustomItem Code
-
+        public const string TemplateId = "{01A28131-5CC9-4419-BD14-351922CE9416}";
+        
         public ConditionInputTypeItem(Item innerItem)
             : base(innerItem)
         {
@@ -23,15 +19,7 @@ namespace Hi.UrlRewrite.Templates.Conditions.Types
 
         public static implicit operator Item(ConditionInputTypeItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-
-        #endregion //Field Instance Methods
     }
 }

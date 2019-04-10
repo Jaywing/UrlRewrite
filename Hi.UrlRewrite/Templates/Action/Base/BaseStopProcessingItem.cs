@@ -1,29 +1,18 @@
-using System;
 using Sitecore.Data.Items;
-using System.Collections.Generic;
 using Sitecore.Data.Fields;
-using Sitecore.Web.UI.WebControls;
 
 namespace Hi.UrlRewrite.Templates.Action.Base
 {
-    public partial class BaseStopProcessingItem : CustomItem
+    public class BaseStopProcessingItem : CustomItem
     {
+        public const string TemplateId = "{05BB43CA-F36D-46CF-BBAB-D46C8E3FEF16}";
 
-        public static readonly string TemplateId = "{05BB43CA-F36D-46CF-BBAB-D46C8E3FEF16}";
-
-        #region Inherited Base Templates
-
-        private readonly BaseActionItem _BaseAction;
-        public BaseActionItem BaseAction { get { return _BaseAction; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseActionItem BaseAction { get; }
 
         public BaseStopProcessingItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseAction = new BaseActionItem(innerItem);
+            BaseAction = new BaseActionItem(innerItem);
 
         }
 
@@ -34,24 +23,9 @@ namespace Hi.UrlRewrite.Templates.Action.Base
 
         public static implicit operator Item(BaseStopProcessingItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-
-        public CheckboxField StopProcessingOfSubsequentRules
-        {
-            get
-            {
-                return new CheckboxField(InnerItem.Fields["Stop processing of subsequent rules"]);
-            }
-        }
-
-
-        #endregion //Field Instance Methods
+        public CheckboxField StopProcessingOfSubsequentRules => new CheckboxField(InnerItem.Fields["Stop processing of subsequent rules"]);
     }
 }

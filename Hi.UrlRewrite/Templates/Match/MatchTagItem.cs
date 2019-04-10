@@ -3,21 +3,16 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Match
 {
-    public partial class MatchTagItem : CustomItem
+    public class MatchTagItem : CustomItem
     {
+        public const string TemplateId = "{B88D1713-7511-40D0-B71D-51A5E14C7C7E}";
 
-        public static readonly string TemplateId = "{B88D1713-7511-40D0-B71D-51A5E14C7C7E}";
-
-
-        private readonly BaseUrlRewriteItem _BaseUrlRewriteItem;
-        public BaseUrlRewriteItem BaseUrlRewriteItem { get { return _BaseUrlRewriteItem; } }
-
-        #region Boilerplate CustomItem Code
+        public BaseUrlRewriteItem BaseUrlRewriteItem { get; }
 
         public MatchTagItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
+            BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
         }
 
         public static implicit operator MatchTagItem(Item innerItem)
@@ -27,31 +22,11 @@ namespace Hi.UrlRewrite.Templates.Match
 
         public static implicit operator Item(MatchTagItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
+        public TextField Tag => new TextField(InnerItem.Fields["Tag"]);
 
-
-        #region Field Instance Methods
-
-        public TextField Tag
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Tag"]);
-            }
-        }
-
-
-        public TextField Attribute
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Attribute"]);
-            }
-        }
-
-        #endregion //Field Instance Methods
+        public TextField Attribute => new TextField(InnerItem.Fields["Attribute"]);
     }
 }

@@ -538,6 +538,7 @@
     <Compile Include="Entities\ServerVariables\ResponseHeader.cs" />
     <Compile Include="Entities\ServerVariables\ServerVariable.cs" />
     <Compile Include="Extensions\ItemExtensions.cs" />
+    <Compile Include="Extensions\LogObject.cs" />
     <Compile Include="Fields\SiteDropList.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogHelper.cs" />

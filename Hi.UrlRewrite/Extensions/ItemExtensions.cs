@@ -24,14 +24,11 @@ using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
 using Sitecore.Links;
 
-namespace Hi.UrlRewrite
+namespace Hi.UrlRewrite.Extensions
 {
 	public static class ItemExtensions
     {
-
-        #region Conversions
-
-        #region Rules
+        private static readonly LogObject LogObject = new LogObject();
 
         public static OutboundRule ToOutboundRule(this OutboundRuleItem outboundRuleItem)
         {
@@ -51,13 +48,13 @@ namespace Hi.UrlRewrite
 
             if (string.IsNullOrEmpty(outboundRuleItem.BaseRuleItem.BaseMatchItem.MatchPatternItem.Pattern.Value))
             {
-                Log.Warn(logObject, outboundRuleItem.Database, "No pattern set on rule with ItemID: {0}", outboundRuleItem.ID);
+                Log.Warn(LogObject, outboundRuleItem.Database, "No pattern set on rule with ItemID: {0}", outboundRuleItem.ID);
                 return null;
             }
 
             if (outboundRuleItem.Action == null)
             {
-                Log.Warn(logObject, outboundRuleItem.Database, "No action set on rule with ItemID: {0}", outboundRuleItem.ID);
+                Log.Warn(LogObject, outboundRuleItem.Database, "No action set on rule with ItemID: {0}", outboundRuleItem.ID);
                 return null;
             }
 
@@ -105,7 +102,7 @@ namespace Hi.UrlRewrite
             Using? usingType = null;
             if (usingItem != null)
             {
-                var usingItemId = usingItem.ID.ToString();
+                string usingItemId = usingItem.ID.ToString();
                 switch (usingItemId)
                 {
                     case Constants.UsingType_RegularExpressions_ItemId:
@@ -146,13 +143,13 @@ namespace Hi.UrlRewrite
 
             if (string.IsNullOrEmpty(inboundRuleItem.BaseRuleItem.BaseMatchItem.MatchPatternItem.Pattern.Value))
             {
-                Log.Warn(logObject, inboundRuleItem.Database, "No pattern set on rule with ItemID: {0}", inboundRuleItem.ID);
+                Log.Warn(LogObject, inboundRuleItem.Database, "No pattern set on rule with ItemID: {0}", inboundRuleItem.ID);
                 return null;
             }
 
             if (inboundRuleItem.Action == null)
             {
-                Log.Warn(logObject, inboundRuleItem.Database, "No action set on rule with ItemID: {0}", inboundRuleItem.ID);
+                Log.Warn(LogObject, inboundRuleItem.Database, "No action set on rule with ItemID: {0}", inboundRuleItem.ID);
                 return null;
             }
 
@@ -204,7 +201,7 @@ namespace Hi.UrlRewrite
             return inboundRule;
         }
 
-        public static IEnumerable<BaseConditionItem> GetBaseConditionItems(Item item)
+        private static IEnumerable<BaseConditionItem> GetBaseConditionItems(Item item)
         {
             IEnumerable<BaseConditionItem> conditionItems = null;
 
@@ -250,7 +247,7 @@ namespace Hi.UrlRewrite
             return requestHeaderItems;
         }
 
-        public static IEnumerable<ResponseHeaderItem> GetResponseHeaderItems(Item item)
+        private static IEnumerable<ResponseHeaderItem> GetResponseHeaderItems(Item item)
         {
             IEnumerable<ResponseHeaderItem> responeHeaderItems = null;
 
@@ -433,11 +430,7 @@ namespace Hi.UrlRewrite
 
         }
 
-        #endregion
-
-        #region Conditions
-
-        public static Condition ToCondition(this BaseConditionItem baseConditionItem)
+        private static Condition ToCondition(this BaseConditionItem baseConditionItem)
         {
             Condition condition = GetBaseConditionInfo(baseConditionItem);
 
@@ -526,23 +519,19 @@ namespace Hi.UrlRewrite
             return condition;
         }
 
-        #endregion
-
-        #region Server Variables
-
-        public static ServerVariable ToServerVariable(this ServerVariableItem serverVariableItem)
+        private static ServerVariable ToServerVariable(this ServerVariableItem serverVariableItem)
         {
             IBaseServerVariable serverVariable = GetBaseServerVariable(serverVariableItem);
             return serverVariable as ServerVariable;
         }
 
-        public static RequestHeader ToRequestHeader(this RequestHeaderItem requestHeaderItem)
+        private static RequestHeader ToRequestHeader(this RequestHeaderItem requestHeaderItem)
         {
             IBaseServerVariable requestHeader = GetBaseServerVariable(requestHeaderItem);
             return requestHeader as RequestHeader;
         }
 
-        public static ResponseHeader ToResponseHeader(this ResponseHeaderItem responseHeaderItem)
+        private static ResponseHeader ToResponseHeader(this ResponseHeaderItem responseHeaderItem)
         {
             IBaseServerVariable responseHeader = GetBaseServerVariable(responseHeaderItem);
             return responseHeader as ResponseHeader;
@@ -598,11 +587,7 @@ namespace Hi.UrlRewrite
             return null;
         }
 
-        #endregion
-
-        #region Actions
-
-        public static Redirect ToRedirectAction(this RedirectItem redirectItem)
+        private static Redirect ToRedirectAction(this RedirectItem redirectItem)
         {
 
             if (redirectItem == null)
@@ -632,7 +617,7 @@ namespace Hi.UrlRewrite
             return redirectAction;
         }
 
-        public static Rewrite ToRewriteAction(this RewriteItem rewriteItem)
+        private static Rewrite ToRewriteAction(this RewriteItem rewriteItem)
         {
             if (rewriteItem == null)
             {
@@ -655,7 +640,7 @@ namespace Hi.UrlRewrite
             return rewriteAction;
         }
 
-        public static AbortRequest ToAbortRequestAction(this AbortRequestItem abortRequestItem)
+        private static AbortRequest ToAbortRequestAction(this AbortRequestItem abortRequestItem)
         {
             if (abortRequestItem == null)
             {
@@ -670,7 +655,7 @@ namespace Hi.UrlRewrite
             return abortRequestAction;
         }
 
-        public static OutboundRewrite ToOutboundRewriteAction(this OutboundRewriteItem outboundRewriteItem)
+        private static OutboundRewrite ToOutboundRewriteAction(this OutboundRewriteItem outboundRewriteItem)
         {
             if (outboundRewriteItem == null)
             {
@@ -689,7 +674,7 @@ namespace Hi.UrlRewrite
             return outboundRewriteAction;
         }
 
-        public static CustomResponse ToCustomResponseAction(this CustomResponseItem customResponseItem)
+        private static CustomResponse ToCustomResponseAction(this CustomResponseItem customResponseItem)
         {
             if (customResponseItem == null)
             {
@@ -710,10 +695,9 @@ namespace Hi.UrlRewrite
 
             customResponseAction.StatusCode = statusCode;
 
-            if (customResponseItem.SubstatusCode.Value != null)
+            if (customResponseItem.SubStatusCode.Value != null)
             {
-                int outSubStatusCode = 0;
-                if (int.TryParse(customResponseItem.SubstatusCode.Value, out outSubStatusCode))
+                if (int.TryParse(customResponseItem.SubStatusCode.Value, out int outSubStatusCode))
                 {
                     customResponseAction.SubStatusCode = outSubStatusCode;
                 }
@@ -725,7 +709,7 @@ namespace Hi.UrlRewrite
             return customResponseAction;
         }
 
-        public static ItemQueryRedirect ToItemQueryRedirectAction(this ItemQueryRedirectItem itemQueryRedirectItem)
+        private static ItemQueryRedirect ToItemQueryRedirectAction(this ItemQueryRedirectItem itemQueryRedirectItem)
         {
             if (itemQueryRedirectItem == null)
             {
@@ -762,11 +746,8 @@ namespace Hi.UrlRewrite
         private static void GetBaseRewriteUrlItem(BaseRewriteUrlItem baseRewriteUrlItem, IBaseRewriteUrl redirectAction)
         {
             LinkField redirectTo = baseRewriteUrlItem.RewriteUrl;
-            string actionRewriteUrl;
-            Guid? redirectItemId;
-            string redirectItemAnchor;
 
-            RulesEngine.GetRedirectUrlOrItemId(redirectTo, out actionRewriteUrl, out redirectItemId, out redirectItemAnchor);
+            RulesEngine.GetRedirectUrlOrItemId(redirectTo, out string actionRewriteUrl, out Guid? redirectItemId, out string redirectItemAnchor);
             redirectAction.RewriteItemId = redirectItemId;
             redirectAction.RewriteItemAnchor = redirectItemAnchor;
             redirectAction.RewriteUrl = actionRewriteUrl;
@@ -837,12 +818,6 @@ namespace Hi.UrlRewrite
             redirectAction.StatusCode = redirectType;
         }
 
-        #endregion
-
-        #endregion
-
-        #region Helpers
-
         public static bool IsOutboundRuleItem(this Item item)
         {
             return !IsTemplate(item) && item.TemplateID.ToString().Equals(OutboundRuleItem.TemplateId, StringComparison.InvariantCultureIgnoreCase);
@@ -863,12 +838,7 @@ namespace Hi.UrlRewrite
             return !IsTemplate(item) && item.TemplateID.ToString().Equals(InboundRuleItem.TemplateId, StringComparison.InvariantCultureIgnoreCase);
         }
 
-	    public static bool IsInboundRuleItemChild(this Item item)
-	    {
-		    return IsInboundRuleItemChild(item, null);
-	    }
-
-	    public static bool IsInboundRuleItemChild(this Item item, ID parentId)
+        public static bool IsInboundRuleItemChild(this Item item, ID parentId = null)
         {
 	        Item itemParent = item.Parent;
             if (item.Parent == null && parentId != (ID)null)
@@ -894,18 +864,18 @@ namespace Hi.UrlRewrite
 
         public static bool IsRedirectType(this Item item)
         {
-            return !IsTemplate(item) && (new ID[]
-                   {
-                       new ID(RewriteItem.TemplateId),
-                       new ID(RedirectItem.TemplateId),
-                       new ID(ItemQueryRedirectItem.TemplateId),
-                       new ID(CustomResponseItem.TemplateId),
-                       new ID(AbortRequestItem.TemplateId),
-                       new ID(NoneItem.TemplateId)
-                   }).Any(e => e.Equals(item.TemplateID));
+            return !IsTemplate(item) && new ID[]
+            {
+                new ID(RewriteItem.TemplateId),
+                new ID(RedirectItem.TemplateId),
+                new ID(ItemQueryRedirectItem.TemplateId),
+                new ID(CustomResponseItem.TemplateId),
+                new ID(AbortRequestItem.TemplateId),
+                new ID(NoneItem.TemplateId)
+            }.Any(e => e.Equals(item.TemplateID));
         }
 
-        public static bool IsTemplate(this Item item)
+        private static bool IsTemplate(this Item item)
         {
             return item.Paths.FullPath.StartsWith("/sitecore/templates", StringComparison.InvariantCultureIgnoreCase);
         }
@@ -915,9 +885,7 @@ namespace Hi.UrlRewrite
             return db.GetItem(new ID(rule.ItemId));
         }
 
-        #endregion
-
-        public static Item[] GetReferrers(this Item item, bool includeStandardValues = false)
+        public static IEnumerable<Item> GetReferrers(this Item item, bool includeStandardValues = false)
         {
             if (item == null)
                 return new Item[0];
@@ -932,15 +900,5 @@ namespace Hi.UrlRewrite
 
             return linkedItems.ToArray();
         }
-
-        #region LogObject
-
-        private static readonly LogObject logObject = new LogObject();
-
-        private class LogObject
-        {
-        }
-
-        #endregion
     }
 }

@@ -1,9 +1,4 @@
 ﻿using Hi.UrlRewrite.Templates.Action.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
 
@@ -11,21 +6,14 @@ namespace Hi.UrlRewrite.Templates.Action
 {
     public class CustomResponseItem : CustomItem
     {
-        public static readonly string TemplateId = "{A96D8E98-38B7-4D99-BE55-D5225F6D8279}";
+        public const string TemplateId = "{A96D8E98-38B7-4D99-BE55-D5225F6D8279}";
 
-        #region Inherited Base Templates
-
-        private readonly BaseActionItem _BaseActionItem;
-        public BaseActionItem BaseActionItem { get { return _BaseActionItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseActionItem BaseActionItem { get; }
 
         public CustomResponseItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseActionItem = new BaseActionItem(innerItem);
+            BaseActionItem = new BaseActionItem(innerItem);
         }
 
         public static implicit operator CustomResponseItem(Item innerItem)
@@ -35,46 +23,15 @@ namespace Hi.UrlRewrite.Templates.Action
 
         public static implicit operator Item(CustomResponseItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
+        public TextField StatusCode => new TextField(InnerItem.Fields["Status code"]);
 
-        #region Field Instance Methods
+        public TextField SubStatusCode => new TextField(InnerItem.Fields["Substatus code"]);
 
-        public TextField StatusCode
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Status code"]);
-            }
-        }
+        public TextField Reason => new TextField(InnerItem.Fields["Reason"]);
 
-        public TextField SubstatusCode
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Substatus code"]);
-            }
-        }
-
-        public TextField Reason
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Reason"]);
-            }
-        }
-
-        public TextField ErrorDescription
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Error description"]);
-            }
-        }
-
-        #endregion
-
+        public TextField ErrorDescription => new TextField(InnerItem.Fields["Error description"]);
     }
 }
