@@ -1,42 +1,26 @@
-using System;
-using Hi.UrlRewrite.Templates.Match;
 using Sitecore.Data.Items;
-using System.Collections.Generic;
-using Sitecore.Data.Fields;
-using Sitecore.Web.UI.WebControls;
 
-namespace Hi.UrlRewrite.Templates.Conditions
+namespace Hi.UrlRewrite.Templates.Match
 {
-    public partial class BaseMatchItem : CustomItem
+    public class BaseMatchItem : CustomItem
     {
+        public const string TemplateId = "{57516483-A64C-4036-895B-B55D9267A8E6}";
 
-        public static readonly string TemplateId = "{57516483-A64C-4036-895B-B55D9267A8E6}";
+        public MatchIgnoreCaseItem MatchIgnoreCaseItem { get; }
 
-        #region Inherited Base Templates
+        public MatchMatchTypeItem MatchMatchTypeItem { get; }
 
-        private readonly MatchIgnoreCaseItem _MatchIgnoreCaseItem;
-        public MatchIgnoreCaseItem MatchIgnoreCaseItem { get { return _MatchIgnoreCaseItem; } }
+        public MatchPatternItem MatchPatternItem { get; }
 
-        private readonly MatchMatchTypeItem _MatchMatchTypeItem;
-        public MatchMatchTypeItem MatchMatchTypeItem { get { return _MatchMatchTypeItem; } }
-
-        private readonly MatchPatternItem _MatchPatternItem;
-        public MatchPatternItem MatchPatternItem { get { return _MatchPatternItem; } }
-
-        private readonly MatchUsingItem _MatchUsingItem;
-        public MatchUsingItem MatchUsingItem { get { return _MatchUsingItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public MatchUsingItem MatchUsingItem { get; }
 
         public BaseMatchItem(Item innerItem)
             : base(innerItem)
         {
-            _MatchIgnoreCaseItem = new MatchIgnoreCaseItem(innerItem);
-            _MatchMatchTypeItem = new MatchMatchTypeItem(innerItem);
-            _MatchPatternItem = new MatchPatternItem(innerItem);
-            _MatchUsingItem = new MatchUsingItem(innerItem);
+            MatchIgnoreCaseItem = new MatchIgnoreCaseItem(innerItem);
+            MatchMatchTypeItem = new MatchMatchTypeItem(innerItem);
+            MatchPatternItem = new MatchPatternItem(innerItem);
+            MatchUsingItem = new MatchUsingItem(innerItem);
         }
 
         public static implicit operator BaseMatchItem(Item innerItem)
@@ -46,14 +30,7 @@ namespace Hi.UrlRewrite.Templates.Conditions
 
         public static implicit operator Item(BaseMatchItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-        #endregion //Field Instance Methods
     }
 }

@@ -1,9 +1,4 @@
 ﻿using Hi.UrlRewrite.Templates.Action.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
 
@@ -11,21 +6,14 @@ namespace Hi.UrlRewrite.Templates.Action
 {
     public class OutboundRewriteItem : CustomItem
     {
-        public static readonly string TemplateId = "{A5E7B43A-4387-4109-950E-6181452F4976}";
+        public const string TemplateId = "{A5E7B43A-4387-4109-950E-6181452F4976}";
 
-        #region Inherited Base Templates
-
-        private readonly BaseStopProcessingItem _BaseStopProcessingItem;
-        public BaseStopProcessingItem BaseStopProcessingItem { get { return _BaseStopProcessingItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseStopProcessingItem BaseStopProcessingItem { get; }
 
         public OutboundRewriteItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseStopProcessingItem = new BaseStopProcessingItem(innerItem);
+            BaseStopProcessingItem = new BaseStopProcessingItem(innerItem);
         }
 
         public static implicit operator OutboundRewriteItem(Item innerItem)
@@ -35,22 +23,9 @@ namespace Hi.UrlRewrite.Templates.Action
 
         public static implicit operator Item(OutboundRewriteItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-        #region Field Instance Methods
-
-        public TextField Value
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Value"]);
-            }
-        }
-
-        #endregion
-
+        public TextField Value => new TextField(InnerItem.Fields["Value"]);
     }
 }

@@ -1,31 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hi.UrlRewrite.Templates.Action.Base;
+﻿using Hi.UrlRewrite.Templates.Action.Base;
 using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Action
 {
-    public partial class NoneItem : CustomItem
+    public class NoneItem : CustomItem
     {
+        public const string TemplateId = "{12FA1A86-77CC-4097-86DB-A66849AF157A}";
 
-        public static readonly string TemplateId = "{12FA1A86-77CC-4097-86DB-A66849AF157A}";
-
-        #region Inherited Base Templates
-
-        private readonly BaseStopProcessingItem _BaseStopProcessingActionItem;
-        public BaseStopProcessingItem BaseStopProcessingActionItem { get { return _BaseStopProcessingActionItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseStopProcessingItem BaseStopProcessingActionItem { get; }
 
         public NoneItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseStopProcessingActionItem = new BaseStopProcessingItem(innerItem);
+            BaseStopProcessingActionItem = new BaseStopProcessingItem(innerItem);
         }
 
         public static implicit operator NoneItem(Item innerItem)
@@ -35,9 +22,7 @@ namespace Hi.UrlRewrite.Templates.Action
 
         public static implicit operator Item(NoneItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
     }
 }

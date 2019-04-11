@@ -2,15 +2,10 @@
 
 namespace Hi.UrlRewrite.Templates.Action.Types
 {
-
-    public partial class HttpCacheabilityTypeItem : CustomItem
+    public class HttpCacheabilityTypeItem : CustomItem
     {
-
-        public static readonly string TemplateId = "{482F740A-FEF3-4C88-AE89-3D5859FD0D6D}";
-
-
-        #region Boilerplate CustomItem Code
-
+        public const string TemplateId = "{482F740A-FEF3-4C88-AE89-3D5859FD0D6D}";
+        
         public HttpCacheabilityTypeItem(Item innerItem)
             : base(innerItem)
         {
@@ -24,16 +19,7 @@ namespace Hi.UrlRewrite.Templates.Action.Types
 
         public static implicit operator Item(HttpCacheabilityTypeItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-
-        #endregion //Field Instance Methods
     }
-
 }

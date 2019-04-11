@@ -1,40 +1,28 @@
-using System;
-using Sitecore.Data.Items;
-using System.Collections.Generic;
+using Hi.UrlRewrite.Templates.Action.Base;
 using Sitecore.Data.Fields;
-using Sitecore.Web.UI.WebControls;
+using Sitecore.Data.Items;
 
-namespace Hi.UrlRewrite.Templates.Action.Base
+namespace Hi.UrlRewrite.Templates.Action
 {
-    public partial class ItemQueryRedirectItem : CustomItem
+    public class ItemQueryRedirectItem : CustomItem
     {
+        public const string TemplateId = "{5B7FB661-CB6C-449C-9C84-2672538AC77C}";
 
-        public static readonly string TemplateId = "{5B7FB661-CB6C-449C-9C84-2672538AC77C}";
+        public BaseAppendQuerystringItem BaseAppendQuerystringItem { get; }
 
-        #region Inherited Base Templates
+        public BaseCacheItem BaseCacheItem { get; }
 
-        private readonly BaseAppendQuerystringItem _BaseAppendQuerystringItem;
-        public BaseAppendQuerystringItem BaseAppendQuerystringItem { get { return _BaseAppendQuerystringItem; } }
+        public BaseRedirectTypeItem BaseRedirectTypeItem { get; }
 
-        private readonly BaseCacheItem _BaseCacheItem;
-        public BaseCacheItem BaseCacheItem { get { return _BaseCacheItem; } }
-
-        private readonly BaseRedirectTypeItem _BaseRedirectTypeItem;
-        public BaseRedirectTypeItem BaseRedirectTypeItem { get { return _BaseRedirectTypeItem; } }
-
-        private readonly BaseStopProcessingItem _BaseStopProcessingItem;
-        public BaseStopProcessingItem BaseStopProcessingItem { get { return _BaseStopProcessingItem; } }
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseStopProcessingItem BaseStopProcessingItem { get; }
 
         public ItemQueryRedirectItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseAppendQuerystringItem = new BaseAppendQuerystringItem(innerItem);
-            _BaseCacheItem = new BaseCacheItem(innerItem);
-            _BaseRedirectTypeItem = new BaseRedirectTypeItem(innerItem);
-            _BaseStopProcessingItem = new BaseStopProcessingItem(innerItem);
+            BaseAppendQuerystringItem = new BaseAppendQuerystringItem(innerItem);
+            BaseCacheItem = new BaseCacheItem(innerItem);
+            BaseRedirectTypeItem = new BaseRedirectTypeItem(innerItem);
+            BaseStopProcessingItem = new BaseStopProcessingItem(innerItem);
         }
 
         public static implicit operator ItemQueryRedirectItem(Item innerItem)
@@ -44,23 +32,9 @@ namespace Hi.UrlRewrite.Templates.Action.Base
 
         public static implicit operator Item(ItemQueryRedirectItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-
-        public TextField ItemQuery
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Item Query"]);
-            }
-        }
-
-        #endregion //Field Instance Methods
+        public TextField ItemQuery => new TextField(InnerItem.Fields["Item Query"]);
     }
 }

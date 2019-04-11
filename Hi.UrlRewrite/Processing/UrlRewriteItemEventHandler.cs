@@ -1,6 +1,5 @@
 ﻿using Hi.UrlRewrite.Templates.Folders;
 using Hi.UrlRewrite.Templates.Inbound;
-using Sitecore;
 using Sitecore.Data;
 using Sitecore.Data.Events;
 using Sitecore.Data.Items;
@@ -8,14 +7,12 @@ using Sitecore.Events;
 using Sitecore.SecurityModel;
 using System;
 using System.Linq;
+using Hi.UrlRewrite.Extensions;
 
 namespace Hi.UrlRewrite.Processing
 {
     public class UrlRewriteItemEventHandler
     {
-
-        #region ItemSaved
-
         public void OnItemSaved(object sender, EventArgs args)
         {
             var item = Event.ExtractParameter(args, 0) as Item;
@@ -31,14 +28,13 @@ namespace Hi.UrlRewrite.Processing
 
         public void OnItemSavedRemote(object sender, EventArgs args)
         {
-            var itemSavedRemoteEventArg = args as ItemSavedRemoteEventArgs;
-            if (itemSavedRemoteEventArg == null)
+            if (!(args is ItemSavedRemoteEventArgs itemSavedRemoteEventArg))
             {
                 return;
             }
 
-            var itemId = itemSavedRemoteEventArg.Item.ID;
-            var db = itemSavedRemoteEventArg.Item.Database;
+            ID itemId = itemSavedRemoteEventArg.Item.ID;
+            Database db = itemSavedRemoteEventArg.Item.Database;
             Item item;
 
             using (new SecurityDisabler())
@@ -51,14 +47,14 @@ namespace Hi.UrlRewrite.Processing
 
         private void RunItemSaved(Item item, ItemChanges itemChanges)
         {
-            var db = item.Database;
+            Database db = item.Database;
             var rulesEngine = new RulesEngine(db);
 
             try
             {
                 using (new SecurityDisabler())
                 {
-                    var redirectFolderItem = GetRedirectFolderItem(item);
+                    Item redirectFolderItem = GetRedirectFolderItem(item);
 
                     if (redirectFolderItem == null) return;
 
@@ -76,7 +72,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsSimpleRedirectItem())
                     {
-	                    if (rulesEngine.CanRefreshInboundRule(item, redirectFolderItem))
+	                    if (rulesEngine.CanRefreshInboundRule(item))
 	                    {
 		                    Log.Info(this, db, "Refreshing Simple Redirect [{0}] after save event", item.Paths.FullPath);
 
@@ -91,7 +87,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsInboundRuleItem())
                     {
-						if (rulesEngine.CanRefreshInboundRule(item, redirectFolderItem))
+						if (rulesEngine.CanRefreshInboundRule(item))
 						{
 							Log.Info(this, db, "Refreshing Inbound Rule [{0}] after save event", item.Paths.FullPath);
 
@@ -106,7 +102,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsRedirectType() && item.IsInboundRuleItemChild() && db.Name.Equals("master", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        var inboundRuleItem = item.Parent;
+                        Item inboundRuleItem = item.Parent;
                         var inboundRule = new InboundRuleItem(inboundRuleItem);
 
                         inboundRule.BeginEdit();
@@ -115,7 +111,7 @@ namespace Hi.UrlRewrite.Processing
                     }
                     else if (item.IsInboundRuleItemChild())
                     {
-						if (rulesEngine.CanRefreshInboundRule(item.Parent, redirectFolderItem))
+						if (rulesEngine.CanRefreshInboundRule(item.Parent))
 						{
 							Log.Info(this, db, "Refreshing Inbound Rule [{0}] after save event", item.Parent.Paths.FullPath);
 
@@ -140,17 +136,12 @@ namespace Hi.UrlRewrite.Processing
             {
                 Log.Error(this, ex, db, "Exception occured when saving item after save - Item ID: {0} Item Path: {1}", item.ID, item.Paths.FullPath);
             }
-
         }
 
 	    private static Item GetRedirectFolderItem(Item item)
 	    {
 		    return item.Axes.GetAncestors().FirstOrDefault(a => a.TemplateID.Equals(new ID(RedirectFolderItem.TemplateId)));
 	    }
-
-	    #endregion
-
-        #region ItemDeleted
 
         public void OnItemDeleted(object sender, EventArgs args)
         {
@@ -166,8 +157,7 @@ namespace Hi.UrlRewrite.Processing
 
         public void OnItemDeletedRemote(object sender, EventArgs args)
         {
-            var itemDeletedRemoteEventArg = args as ItemDeletedRemoteEventArgs;
-            if (itemDeletedRemoteEventArg == null)
+            if (!(args is ItemDeletedRemoteEventArgs itemDeletedRemoteEventArg))
             {
                 return;
             }
@@ -177,12 +167,10 @@ namespace Hi.UrlRewrite.Processing
 
         private void RunItemDeleted(Item item, ID formerParentId)
         {
-
             var rulesEngine = new RulesEngine(item.Database);
 
             try
             {
-
                 using (new SecurityDisabler())
                 {
 
@@ -191,7 +179,6 @@ namespace Hi.UrlRewrite.Processing
 						Log.Info(this, item.Database, "Clearing inbound rules cache after delete event");
 
 						rulesEngine.DeleteRule(item, null);
-						//rulesEngine.ClearInboundRuleCache();
 					}
 					else if (item.IsInboundRuleItemChild(formerParentId))
                     {
@@ -211,7 +198,6 @@ namespace Hi.UrlRewrite.Processing
 
 						rulesEngine.ClearOutboundRuleCache();
 					}
-
                 }
             }
             catch (Exception ex)
@@ -219,8 +205,5 @@ namespace Hi.UrlRewrite.Processing
                 Log.Error(this, ex, item.Database, "Exception occured which deleting item after publish Item ID: {0} Item Path: {1}", item.ID, item.Paths.FullPath);
             }
         }
-
-        #endregion
-
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Hi.UrlRewrite.Templates.Conditions;
-using Sitecore.Data.Fields;
+using Hi.UrlRewrite.Templates.Match;
 using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates
@@ -8,29 +8,21 @@ namespace Hi.UrlRewrite.Templates
     {
         public static readonly string TemplateId = "{995478B6-29FB-4CF8-B5FB-5C1C5B21BF5A}";
 
-        #region Inherited Base Templates
+        public BaseUrlRewriteItem BaseUrlRewriteItem { get; }
 
-        private readonly BaseUrlRewriteItem _BaseUrlRewriteItem;
-        public BaseUrlRewriteItem BaseUrlRewriteItem { get { return _BaseUrlRewriteItem; } }
+        public ConditionLogicalGroupingItem ConditionLogicalGroupingItem { get; }
 
-        private readonly ConditionLogicalGroupingItem _ConditionLogicalGroupingItem;
-        public ConditionLogicalGroupingItem ConditionLogicalGroupingItem { get { return _ConditionLogicalGroupingItem; } }
+        public BaseMatchItem BaseMatchItem { get; }
 
-        private readonly BaseMatchItem _BaseMatchItem;
-        public BaseMatchItem BaseMatchItem { get { return _BaseMatchItem; } }
-
-        private readonly BaseEnabledItem _BaseEnabledItem;
-        public BaseEnabledItem BaseEnabledItem { get { return _BaseEnabledItem; } }
-
-        #endregion
+        public BaseEnabledItem BaseEnabledItem { get; }
 
         public BaseRuleItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
-            _ConditionLogicalGroupingItem = new ConditionLogicalGroupingItem(innerItem);
-            _BaseMatchItem = new BaseMatchItem(innerItem);
-            _BaseEnabledItem = new BaseEnabledItem(innerItem);
+            BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
+            ConditionLogicalGroupingItem = new ConditionLogicalGroupingItem(innerItem);
+            BaseMatchItem = new BaseMatchItem(innerItem);
+            BaseEnabledItem = new BaseEnabledItem(innerItem);
         }
 
         public static implicit operator BaseRuleItem(Item innerItem)
@@ -40,8 +32,7 @@ namespace Hi.UrlRewrite.Templates
 
         public static implicit operator Item(BaseRuleItem customItem)
         {
-	        return customItem != null ? customItem.InnerItem : null;
+	        return customItem?.InnerItem;
         }
-
     }
 }

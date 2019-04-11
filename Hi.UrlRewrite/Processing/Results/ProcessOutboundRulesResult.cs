@@ -1,36 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace Hi.UrlRewrite.Processing.Results
 {
     public class ProcessOutboundRulesResult
     {
-
-        private readonly List<OutboundRuleResult> _processedResults;
-        private readonly string _rewrittenResponseString;
-
         public ProcessOutboundRulesResult(List<OutboundRuleResult> processedResults)
         {
-            _processedResults = processedResults;
-            var lastMatchedResult = _processedResults.LastOrDefault(r => r.RuleMatched);
+            ProcessedResults = processedResults;
+            OutboundRuleResult lastMatchedResult = ProcessedResults.LastOrDefault(r => r.RuleMatched);
 
             if (lastMatchedResult != null)
             {
-                _rewrittenResponseString = lastMatchedResult.RewrittenResponseString;
-                //_finalAction = lastMatchedResult.ResultAction;
-            }
-
-        }
-
-        public string ResponseString
-        {
-            get
-            {
-                return _rewrittenResponseString;
+                ResponseString = lastMatchedResult.RewrittenResponseString;
             }
         }
+
+        public string ResponseString { get; }
+        private List<OutboundRuleResult> ProcessedResults { get; }
 
         public bool MatchedAtLeastOneRule
         {
@@ -39,14 +26,5 @@ namespace Hi.UrlRewrite.Processing.Results
                 return ProcessedResults != null && ProcessedResults.Any(e => e.RuleMatched);
             }
         }
-
-        public List<OutboundRuleResult> ProcessedResults
-        {
-            get
-            {
-                return _processedResults;
-            }
-        }
-
     }
 }

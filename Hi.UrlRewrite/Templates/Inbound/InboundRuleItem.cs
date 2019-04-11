@@ -5,19 +5,14 @@ namespace Hi.UrlRewrite.Templates.Inbound
 {
 	public class InboundRuleItem : CustomItem
     {
-        public static readonly string TemplateId = "{69DCE9A6-D8C1-463D-AF95-B7FEB326013F}";
-		
-        #region Inherited Base Templates
+        public const string TemplateId = "{69DCE9A6-D8C1-463D-AF95-B7FEB326013F}";
 
-        private readonly BaseRuleItem _BaseRuleItem;
-        public BaseRuleItem BaseRuleItem { get { return _BaseRuleItem; } }
-
-        #endregion
+        public BaseRuleItem BaseRuleItem { get; }
 
         public InboundRuleItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseRuleItem = new BaseRuleItem(innerItem);
+            BaseRuleItem = new BaseRuleItem(innerItem);
 
         }
 
@@ -28,24 +23,11 @@ namespace Hi.UrlRewrite.Templates.Inbound
 
         public static implicit operator Item(InboundRuleItem customItem)
         {
-	        return customItem != null ? customItem.InnerItem : null;
+	        return customItem?.InnerItem;
         }
 
-        public LookupField Action
-        {
-            get
-            {
-                return new LookupField(InnerItem.Fields["Action"]);
-            }
-        }
+        public LookupField Action => new LookupField(InnerItem.Fields["Action"]);
 
-        public int SortOrder
-        {
-            get
-            {
-                return this.InnerItem.Appearance.Sortorder;
-            }
-        }
-
+        public int SortOrder => this.InnerItem.Appearance.Sortorder;
     }
 }

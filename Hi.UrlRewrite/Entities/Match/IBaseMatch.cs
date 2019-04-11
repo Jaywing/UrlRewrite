@@ -1,5 +1,4 @@
-﻿
-namespace Hi.UrlRewrite.Entities.Match
+﻿namespace Hi.UrlRewrite.Entities.Match
 {
     public interface IBaseMatch : IUsing
     {

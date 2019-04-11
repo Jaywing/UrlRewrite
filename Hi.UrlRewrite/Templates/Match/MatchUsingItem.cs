@@ -3,13 +3,9 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Match
 {
-    public partial class MatchUsingItem : CustomItem
+    public class MatchUsingItem : CustomItem
     {
-
-        public static readonly string TemplateId = "{BD62F334-3EAB-483D-A88B-D1D36EE51C9E}";
-
-
-        #region Boilerplate CustomItem Code
+        public const string TemplateId = "{BD62F334-3EAB-483D-A88B-D1D36EE51C9E}";
 
         public MatchUsingItem(Item innerItem)
             : base(innerItem)
@@ -24,23 +20,9 @@ namespace Hi.UrlRewrite.Templates.Match
 
         public static implicit operator Item(MatchUsingItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-        public LookupField Using
-        {
-            get
-            {
-                return new LookupField(InnerItem.Fields["Using"]);
-            }
-        }
-
-
-        #endregion //Field Instance Methods
+        public LookupField Using => new LookupField(InnerItem.Fields["Using"]);
     }
 }

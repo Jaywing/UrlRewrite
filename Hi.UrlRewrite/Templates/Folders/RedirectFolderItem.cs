@@ -1,31 +1,21 @@
-using Hi.UrlRewrite.Templates.Settings;
 using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Folders
 {
-    public partial class RedirectFolderItem : CustomItem
+    public class RedirectFolderItem : CustomItem
     {
+        public const string TemplateId = "{CBE995D0-FCE0-4061-B807-B4BBC89962A7}";
 
-        public static readonly string TemplateId = "{CBE995D0-FCE0-4061-B807-B4BBC89962A7}";
+        public FolderItem Folder { get; }
 
-        #region Inherited Base Templates
-
-        private readonly FolderItem _Folder;
-        public FolderItem Folder { get { return _Folder; } }
-
-        private readonly BaseUrlRewriteItem _BaseUrlRewriteItem;
-        public BaseUrlRewriteItem BaseUrlRewriteItem { get { return _BaseUrlRewriteItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseUrlRewriteItem BaseUrlRewriteItem { get; }
 
         public RedirectFolderItem(Item innerItem)
             : base(innerItem)
         {
-            _Folder = new FolderItem(innerItem);
-            _BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
+            Folder = new FolderItem(innerItem);
+            BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
         
         }
 
@@ -36,23 +26,9 @@ namespace Hi.UrlRewrite.Templates.Folders
 
         public static implicit operator Item(RedirectFolderItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-        public TextField SiteNameRestriction
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Site Name Restriction"]);
-            }
-        }
-
-        #endregion //Field Instance Methods
+        public TextField SiteNameRestriction => new TextField(InnerItem.Fields["Site Name Restriction"]);
     }
 }
-

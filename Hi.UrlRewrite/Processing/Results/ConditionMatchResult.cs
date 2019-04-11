@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Hi.UrlRewrite.Entities.Conditions;
-using Hi.UrlRewrite.Entities.Rules;
 
 namespace Hi.UrlRewrite.Processing.Results
 {

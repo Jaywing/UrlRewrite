@@ -10,7 +10,6 @@ namespace Hi.UrlRewrite.Entities.Actions
         public int? SubStatusCode { get; set; }
         public string Reason { get; set; }
         public string ErrorDescription { get; set; }
-
         public string Name { get; set; }
     }
 }

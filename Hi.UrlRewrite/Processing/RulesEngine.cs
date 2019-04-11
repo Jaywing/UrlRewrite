@@ -7,6 +7,7 @@ using Hi.UrlRewrite.Entities.Actions;
 using Hi.UrlRewrite.Entities.Conditions;
 using Hi.UrlRewrite.Entities.Match;
 using Hi.UrlRewrite.Entities.Rules;
+using Hi.UrlRewrite.Extensions;
 using Hi.UrlRewrite.Templates.Folders;
 using Hi.UrlRewrite.Templates.Inbound;
 using Hi.UrlRewrite.Templates.Outbound;
@@ -19,29 +20,21 @@ namespace Hi.UrlRewrite.Processing
 {
 	public class RulesEngine
     {
-        private readonly Database db;
-
-        public Database Database
-        {
-            get
-            {
-                return db;
-            }
-        }
+        private Database Database { get; }
 
         public RulesEngine(Database db)
         {
-            this.db = db;
+            this.Database = db;
         }
 
         public List<InboundRule> GetInboundRules()
         {
-            if (db == null)
+            if (Database == null)
             {
                 return null;
             }
 
-            var redirectFolderItems = GetRedirectFolderItems();
+            IEnumerable<Item> redirectFolderItems = GetRedirectFolderItems();
 
             if (redirectFolderItems == null)
             {
@@ -50,9 +43,9 @@ namespace Hi.UrlRewrite.Processing
 
             var inboundRules = new List<InboundRule>();
 
-            foreach (var redirectFolderItem in redirectFolderItems)
+            foreach (Item redirectFolderItem in redirectFolderItems)
             {
-                Log.Debug(this, db, "Loading Inbound Rules from RedirectFolder: {0}", redirectFolderItem.Name);
+                Log.Debug(this, Database, "Loading Inbound Rules from RedirectFolder: {0}", redirectFolderItem.Name);
 
                 AssembleRulesRecursive(redirectFolderItem, ref inboundRules, new RedirectFolderItem(redirectFolderItem));
             }
@@ -66,9 +59,9 @@ namespace Hi.UrlRewrite.Processing
 			{
 				var simpleRedirectItem = new SimpleRedirectItem(ruleOrFolderItem);
 
-				Log.Debug(this, db, "Loading SimpleRedirect: {0}", simpleRedirectItem.Name);
+				Log.Debug(this, Database, "Loading SimpleRedirect: {0}", simpleRedirectItem.Name);
 
-				var inboundRule = CreateInboundRuleFromSimpleRedirectItem(simpleRedirectItem, redirectFolderItem);
+				InboundRule inboundRule = CreateInboundRuleFromSimpleRedirectItem(simpleRedirectItem, redirectFolderItem);
 
 				if (inboundRule != null && inboundRule.Enabled)
 				{
@@ -79,9 +72,9 @@ namespace Hi.UrlRewrite.Processing
 			{
 				var inboundRuleItem = new InboundRuleItem(ruleOrFolderItem);
 
-				Log.Debug(this, db, "Loading InboundRule: {0}", inboundRuleItem.Name);
+				Log.Debug(this, Database, "Loading InboundRule: {0}", inboundRuleItem.Name);
 
-				var inboundRule = CreateInboundRuleFromInboundRuleItem(inboundRuleItem, redirectFolderItem);
+				InboundRule inboundRule = CreateInboundRuleFromInboundRuleItem(inboundRuleItem, redirectFolderItem);
 
 				if (inboundRule != null && inboundRule.Enabled)
 				{
@@ -101,12 +94,12 @@ namespace Hi.UrlRewrite.Processing
 
         public List<OutboundRule> GetOutboundRules()
         {
-            if (db == null)
+            if (Database == null)
             {
                 return null;
             }
 
-            var redirectFolderItems = GetRedirectFolderItems();
+            IEnumerable<Item> redirectFolderItems = GetRedirectFolderItems();
 
             if (redirectFolderItems == null)
             {
@@ -115,22 +108,22 @@ namespace Hi.UrlRewrite.Processing
 
             var outboundRules = new List<OutboundRule>();
 
-            foreach (var redirectFolderItem in redirectFolderItems)
+            foreach (Item redirectFolderItem in redirectFolderItems)
             {
-                Log.Debug(this, db, "Loading Outbound Rules from RedirectFolder: {0}", redirectFolderItem.Name);
+                Log.Debug(this, Database, "Loading Outbound Rules from RedirectFolder: {0}", redirectFolderItem.Name);
 
-                var folderDescendants = redirectFolderItem.Axes.GetDescendants()
+                IEnumerable<Item> folderDescendants = redirectFolderItem.Axes.GetDescendants()
                     .Where(x => x.TemplateID == new ID(new Guid(OutboundRuleItem.TemplateId)));
 
-                foreach (var descendantItem in folderDescendants)
+                foreach (Item descendantItem in folderDescendants)
                 {
                     if (descendantItem.TemplateID == new ID(new Guid(OutboundRuleItem.TemplateId)))
                     {
                         var outboundRuleItem = new OutboundRuleItem(descendantItem);
 
-                        Log.Debug(this, db, "Loading OutboundRule: {0}", outboundRuleItem.Name);
+                        Log.Debug(this, Database, "Loading OutboundRule: {0}", outboundRuleItem.Name);
 
-                        var outboundRule = CreateOutboundRuleFromOutboundRuleItem(outboundRuleItem, redirectFolderItem);
+                        OutboundRule outboundRule = CreateOutboundRuleFromOutboundRuleItem(outboundRuleItem);
 
                         if (outboundRule != null && outboundRule.Enabled)
                         {
@@ -145,26 +138,21 @@ namespace Hi.UrlRewrite.Processing
 
         private IEnumerable<Item> GetRedirectFolderItems()
         {
-            var redirectFolderItems = db.GetItem(RedirectFolderItem.TemplateId)
+            IEnumerable<Item> redirectFolderItems = Database.GetItem(RedirectFolderItem.TemplateId)
                 .GetReferrers()
                 .Where(e => e.TemplateID == new ID(RedirectFolderItem.TemplateId));
 
             return redirectFolderItems;
         }
 
-        #region Serialization 
-        internal InboundRule CreateInboundRuleFromSimpleRedirectItem(SimpleRedirectItem simpleRedirectItem, RedirectFolderItem redirectFolderItem)
+        private InboundRule CreateInboundRuleFromSimpleRedirectItem(SimpleRedirectItem simpleRedirectItem, RedirectFolderItem redirectFolderItem)
         {
-            var inboundRulePattern = string.Format("^{0}/?$", simpleRedirectItem.Path.Value);
+            string inboundRulePattern = $"^{simpleRedirectItem.Path.Value}/?$";
+            string siteNameRestriction = GetSiteNameRestriction(redirectFolderItem);
 
-            var siteNameRestriction = GetSiteNameRestriction(redirectFolderItem);
+            LinkField redirectTo = simpleRedirectItem.Target;
 
-            var redirectTo = simpleRedirectItem.Target;
-            string actionRewriteUrl;
-            Guid? redirectItem;
-            string redirectItemAnchor;
-
-            GetRedirectUrlOrItemId(redirectTo, out actionRewriteUrl, out redirectItem, out redirectItemAnchor);
+            GetRedirectUrlOrItemId(redirectTo, out string actionRewriteUrl, out Guid? redirectItem, out string redirectItemAnchor);
 
             Log.Debug(this, simpleRedirectItem.Database, "Creating Inbound Rule From Simple Redirect Item - {0} - id: {1} actionRewriteUrl: {2} redirectItem: {3}", simpleRedirectItem.Name, simpleRedirectItem.ID.Guid, actionRewriteUrl, redirectItem);
 
@@ -196,26 +184,23 @@ namespace Hi.UrlRewrite.Processing
             return inboundRule;
         }
 
-        internal InboundRule CreateInboundRuleFromInboundRuleItem(InboundRuleItem inboundRuleItem, RedirectFolderItem redirectFolderItem)
+        private static InboundRule CreateInboundRuleFromInboundRuleItem(InboundRuleItem inboundRuleItem, RedirectFolderItem redirectFolderItem)
         {
-            var siteNameRestriction = GetSiteNameRestriction(redirectFolderItem);
-            var inboundRule = inboundRuleItem.ToInboundRule(siteNameRestriction);
+            string siteNameRestriction = GetSiteNameRestriction(redirectFolderItem);
+            InboundRule inboundRule = inboundRuleItem.ToInboundRule(siteNameRestriction);
 
             return inboundRule;
         }
 
-        internal OutboundRule CreateOutboundRuleFromOutboundRuleItem(OutboundRuleItem outboundRuleItem,
-            RedirectFolderItem redirectFolderItem)
+        private static OutboundRule CreateOutboundRuleFromOutboundRuleItem(OutboundRuleItem outboundRuleItem)
         {
-            var outboundRule = outboundRuleItem.ToOutboundRule();
-
+            OutboundRule outboundRule = outboundRuleItem.ToOutboundRule();
             return outboundRule;
         }
 
-        internal static string GetSiteNameRestriction(RedirectFolderItem redirectFolder)
+        private static string GetSiteNameRestriction(RedirectFolderItem redirectFolder)
         {
-            var site = redirectFolder.SiteNameRestriction.Value;
-
+            string site = redirectFolder.SiteNameRestriction.Value;
             return site;
         }
 
@@ -235,30 +220,26 @@ namespace Hi.UrlRewrite.Processing
                 actionRewriteUrl = redirectTo.Url;
             }
         }
-
-        #endregion
-
-        #region Caching
-
+ 
         private RulesCache GetRulesCache()
         {
-            return RulesCacheManager.GetCache(db);
+            return RulesCacheManager.GetCache(Database);
         }
 
         internal List<InboundRule> GetCachedInboundRules()
         {
-            var inboundRules = GetInboundRules();
+            List<InboundRule> inboundRules = GetInboundRules();
 
             if (inboundRules != null)
             {
-                Log.Info(this, db, "Adding {0} rules to Cache [{1}]", inboundRules.Count, db.Name);
+                Log.Info(this, Database, "Adding {0} rules to Cache [{1}]", inboundRules.Count, Database.Name);
 
-                var cache = GetRulesCache();
+                RulesCache cache = GetRulesCache();
                 cache.SetInboundRules(inboundRules);
             }
             else
             {
-                Log.Info(this, db, "Found no rules");
+                Log.Info(this, Database, "Found no rules");
             }
 
             return inboundRules;
@@ -266,18 +247,18 @@ namespace Hi.UrlRewrite.Processing
 
         internal List<OutboundRule> GetCachedOutboundRules()
         {
-            var outboundRules = GetOutboundRules();
+            List<OutboundRule> outboundRules = GetOutboundRules();
 
             if (outboundRules != null)
             {
-                Log.Info(this, db, "Adding {0} rules to Cache [{1}]", outboundRules.Count, db.Name);
+                Log.Info(this, Database, "Adding {0} rules to Cache [{1}]", outboundRules.Count, Database.Name);
 
-                var cache = GetRulesCache();
+                RulesCache cache = GetRulesCache();
                 cache.SetOutboundRules(outboundRules);
             }
             else
             {
-                Log.Info(this, db, "Found no rules");
+                Log.Info(this, Database, "Found no rules");
             }
 
             return outboundRules;
@@ -286,12 +267,12 @@ namespace Hi.UrlRewrite.Processing
 		/// <summary>
 		/// Checks to see whether this individual inbound rule can be updated without refreshing all rules
 		/// </summary>
-	    internal bool CanRefreshInboundRule(Item item, Item redirectFolderItem)
+	    internal bool CanRefreshInboundRule(Item item)
 	    {
-		    bool result = false;
+		    var result = false;
 
-			var cache = GetRulesCache();
-		    var inboundRules = cache.GetInboundRules();
+			RulesCache cache = GetRulesCache();
+		    List<InboundRule> inboundRules = cache.GetInboundRules();
 
 		    if (inboundRules != null)
 		    {
@@ -301,8 +282,7 @@ namespace Hi.UrlRewrite.Processing
 
 		    return result;
 	    }
-
-
+        
 		internal void RefreshRule(Item item, Item redirectFolderItem)
         {
             UpdateRulesCache(item, redirectFolderItem, AddRule);
@@ -315,28 +295,20 @@ namespace Hi.UrlRewrite.Processing
 
         private void UpdateRulesCache(Item item, Item redirectFolderItem, Action<Item, Item, List<IBaseRule>> action)
         {
-            var cache = GetRulesCache();
+            RulesCache cache = GetRulesCache();
             IEnumerable<IBaseRule> baseRules = null;
             if (item.IsSimpleRedirectItem() || item.IsInboundRuleItem())
             {
-                baseRules = cache.GetInboundRules();
-                if (baseRules == null)
-                {
-                    baseRules = GetInboundRules();
-                }
+                baseRules = cache.GetInboundRules() ?? GetInboundRules();
             }
             else if (item.IsOutboundRuleItem())
             {
-                baseRules = cache.GetOutboundRules();
-                if (baseRules == null)
-                {
-                    baseRules = GetOutboundRules();
-                }
+                baseRules = cache.GetOutboundRules() ?? GetOutboundRules();
             }
 
             if (baseRules != null)
             {
-                var rules = baseRules.ToList();
+                List<IBaseRule> rules = baseRules.ToList();
 
                 action(item, redirectFolderItem, rules);
 
@@ -351,7 +323,6 @@ namespace Hi.UrlRewrite.Processing
                 {
                     cache.SetOutboundRules(rules.OfType<OutboundRule>());
                 }
-
             }
         }
 
@@ -371,7 +342,7 @@ namespace Hi.UrlRewrite.Processing
             }
             else if (item.IsOutboundRuleItem())
             {
-                newRule = CreateOutboundRuleFromOutboundRuleItem(item, redirectFolderItem);
+                newRule = CreateOutboundRuleFromOutboundRuleItem(item);
             }
 
             if (newRule != null)
@@ -384,19 +355,18 @@ namespace Hi.UrlRewrite.Processing
         {
             if (newRule.Enabled)
             {
-                var existingRule = rules.FirstOrDefault(e => e.ItemId == item.ID.Guid);
+                IBaseRule existingRule = rules.FirstOrDefault(e => e.ItemId == item.ID.Guid);
                 if (existingRule != null)
                 {
 
                     Log.Debug(this, item.Database, "Replacing Rule - item: [{0}]", item.Paths.FullPath);
 
-                    var index = rules.FindIndex(e => e.ItemId == existingRule.ItemId);
+                    int index = rules.FindIndex(e => e.ItemId == existingRule.ItemId);
                     rules.RemoveAt(index);
                     rules.Insert(index, newRule);
                 }
                 else
                 {
-
                     Log.Debug(this, item.Database, "Adding Rule - item: [{0}]", item.Paths.FullPath);
 
                     rules.Add(newRule);
@@ -412,7 +382,7 @@ namespace Hi.UrlRewrite.Processing
         {
             Log.Debug(this, item.Database, "Removing Rule - item: [{0}]", item.Paths.FullPath);
 
-            var existingInboundRule = inboundRules.FirstOrDefault(e => e.ItemId == item.ID.Guid);
+            IBaseRule existingInboundRule = inboundRules.FirstOrDefault(e => e.ItemId == item.ID.Guid);
             if (existingInboundRule != null)
             {
                 inboundRules.Remove(existingInboundRule);
@@ -424,7 +394,7 @@ namespace Hi.UrlRewrite.Processing
 		/// </summary>
 		internal void ClearInboundRuleCache()
 		{
-			var cache = GetRulesCache();
+			RulesCache cache = GetRulesCache();
 			cache.ClearInboundRules();
 		}
 
@@ -433,10 +403,8 @@ namespace Hi.UrlRewrite.Processing
 		/// </summary>
 		internal void ClearOutboundRuleCache()
 		{
-			var cache = GetRulesCache();
+			RulesCache cache = GetRulesCache();
 			cache.ClearOutboundRules();
 		}
-		#endregion
-
 	}
 }

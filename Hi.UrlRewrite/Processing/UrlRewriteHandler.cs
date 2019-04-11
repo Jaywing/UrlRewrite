@@ -3,6 +3,7 @@ using Sitecore.Sites;
 using System;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Web;
 using System.Web.Configuration;
@@ -11,10 +12,7 @@ namespace Hi.UrlRewrite.Processing
 {
     public class UrlRewriteHandler : IHttpHandler
     {
-        public bool IsReusable
-        {
-            get { return false; }
-        }
+        public bool IsReusable => false;
 
         public void ProcessRequest(HttpContext context)
         {
@@ -22,9 +20,9 @@ namespace Hi.UrlRewrite.Processing
             {
                 var urlRewriteProcessor = new InboundRewriteProcessor();
                 var requestArgs = new HttpRequestArgs(new HttpContextWrapper(context), HttpRequestType.Begin);
-                var requestUri = context.Request.Url;
+                Uri requestUri = context.Request.Url;
 
-                var siteContext = SiteContextFactory.GetSiteContext(requestUri.Host, requestUri.AbsolutePath,
+                SiteContext siteContext = SiteContextFactory.GetSiteContext(requestUri.Host, requestUri.AbsolutePath,
                     requestUri.Port);
 
                 if (siteContext != null)
@@ -47,7 +45,6 @@ namespace Hi.UrlRewrite.Processing
             }
             catch (Exception ex)
             {
-
                 if (ex is HttpException || ex is ThreadAbortException) return;
 
                 // log it in sitecore
@@ -64,13 +61,13 @@ namespace Hi.UrlRewrite.Processing
 
             try
             {
-                var systemWebAssemblyName =
+                AssemblyName systemWebAssemblyName =
                     GetType()
                         .Assembly.GetReferencedAssemblies()
                         .First(assembly => assembly.FullName.StartsWith("System.Web, "));
-                var systemWeb = AppDomain.CurrentDomain.Load(systemWebAssemblyName);
+                Assembly systemWeb = AppDomain.CurrentDomain.Load(systemWebAssemblyName);
 
-                var staticFileHandlerType = systemWeb.GetType("System.Web.StaticFileHandler", true);
+                Type staticFileHandlerType = systemWeb.GetType("System.Web.StaticFileHandler", true);
                 staticFileHandler = Activator.CreateInstance(staticFileHandlerType, true) as IHttpHandler;
 
             }
@@ -95,10 +92,8 @@ namespace Hi.UrlRewrite.Processing
                     {
                         throw;
                     }
-
                 }    
             }
-
         }
 
         private static void HandleNotFound(HttpContext context)
@@ -121,24 +116,15 @@ namespace Hi.UrlRewrite.Processing
             }
         }
 
-        static CustomErrorsSection CustomErrorsSection = ConfigurationManager.GetSection("system.web/customErrors") as CustomErrorsSection;
-        static CustomErrorsRedirectMode CustomErrorsRedirectMode = CustomErrorsSection.RedirectMode;
-        static string NotFoundPage = GetCustomError("404");
+        private static readonly CustomErrorsSection CustomErrorsSection = ConfigurationManager.GetSection("system.web/customErrors") as CustomErrorsSection;
+        private static readonly CustomErrorsRedirectMode CustomErrorsRedirectMode = CustomErrorsSection.RedirectMode;
+        private static readonly string NotFoundPage = GetCustomError("404");
 
         static protected string GetCustomError(string code)
         {
-            if (CustomErrorsSection != null)
-            {
-                CustomError page = CustomErrorsSection.Errors[code];
+            CustomError page = CustomErrorsSection?.Errors[code];
 
-                if (page != null)
-                {
-                    return page.Redirect;
-                }
-            }
-
-            return CustomErrorsSection.DefaultRedirect;
+            return page != null ? page.Redirect : CustomErrorsSection.DefaultRedirect;
         }
-
     }
 }

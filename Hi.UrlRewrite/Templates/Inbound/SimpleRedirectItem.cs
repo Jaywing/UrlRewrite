@@ -3,28 +3,19 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Inbound
 {
-	public partial class SimpleRedirectItem : CustomItem
+	public class SimpleRedirectItem : CustomItem
     {
+        public const string TemplateId = "{E30B15B9-34CD-419C-8671-60FEAAAD5A46}";
 
-        public static readonly string TemplateId = "{E30B15B9-34CD-419C-8671-60FEAAAD5A46}";
-		
-        #region Inherited Base Templates
+        public BaseUrlRewriteItem BaseUrlRewriteItem { get; }
 
-        private readonly BaseUrlRewriteItem _BaseUrlRewriteItem;
-        public BaseUrlRewriteItem BaseUrlRewriteItem { get { return _BaseUrlRewriteItem; } }
-
-        private readonly BaseEnabledItem _BaseEnabledItem;
-        public BaseEnabledItem BaseEnabledItem { get { return _BaseEnabledItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseEnabledItem BaseEnabledItem { get; }
 
         public SimpleRedirectItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
-            _BaseEnabledItem = new BaseEnabledItem(innerItem);
+            BaseUrlRewriteItem = new BaseUrlRewriteItem(innerItem);
+            BaseEnabledItem = new BaseEnabledItem(innerItem);
         }
 
         public static implicit operator SimpleRedirectItem(Item innerItem)
@@ -34,40 +25,13 @@ namespace Hi.UrlRewrite.Templates.Inbound
 
         public static implicit operator Item(SimpleRedirectItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
+        public TextField Path => new TextField(InnerItem.Fields["Path"]);
 
+        public LinkField Target => new LinkField(InnerItem.Fields["Target"]);
 
-        #region Field Instance Methods
-
-
-        public TextField Path
-        {
-            get
-            {
-                return new TextField(InnerItem.Fields["Path"]);
-            }
-        }
-
-
-        public LinkField Target
-        {
-            get
-            {
-                return new LinkField(InnerItem.Fields["Target"]);
-            }
-        }
-
-        public int SortOrder
-        {
-            get
-            {
-                return this.InnerItem.Appearance.Sortorder;
-            }
-        }
-
-        #endregion //Field Instance Methods
+        public int SortOrder => this.InnerItem.Appearance.Sortorder;
     }
 }

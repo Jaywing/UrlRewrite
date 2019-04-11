@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Web;
+using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Processing
 {
@@ -17,7 +18,7 @@ namespace Hi.UrlRewrite.Processing
 
         public override void Process(HttpRequestArgs args)
         {
-            var db = Sitecore.Context.Database;
+            Database db = Sitecore.Context.Database;
 
             try
             {
@@ -25,7 +26,7 @@ namespace Hi.UrlRewrite.Processing
                 if (HttpContext.Current == null || db == null) return;
 
                 var httpContext = new HttpContextWrapper(HttpContext.Current);
-                var requestUri = httpContext.Request.Url;
+                Uri requestUri = httpContext.Request.Url;
 
                 if (requestUri == null || Configuration.IgnoreUrlPrefixes.Length > 0 && Configuration.IgnoreUrlPrefixes.Any(prefix => requestUri.PathAndQuery.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase)))
                 {
@@ -33,14 +34,14 @@ namespace Hi.UrlRewrite.Processing
                 }
                 
                 var urlRewriter = new InboundRewriter(httpContext.Request.ServerVariables, httpContext.Request.Headers);
-                var requestResult = ProcessUri(requestUri, db, urlRewriter);
+                ProcessInboundRulesResult requestResult = ProcessUri(requestUri, db, urlRewriter);
 
                 if (requestResult == null || !requestResult.MatchedAtLeastOneRule) return;
 
                 httpContext.Items["urlrewrite:db"] = db.Name;
                 httpContext.Items["urlrewrite:result"] = requestResult;
 
-                var urlRewriterItem = Sitecore.Context.Database.GetItem(new ID(Constants.UrlRewriter_ItemId));
+                Item urlRewriterItem = Sitecore.Context.Database.GetItem(new ID(Constants.UrlRewriter_ItemId));
                 if (urlRewriterItem != null)
                 {
                     Sitecore.Context.Item = urlRewriterItem;
@@ -66,20 +67,14 @@ namespace Hi.UrlRewrite.Processing
 
         internal ProcessInboundRulesResult ProcessUri(Uri requestUri, Database db, InboundRewriter urlRewriter)
         {
-            var inboundRules = GetInboundRules(db);
-
-            if (inboundRules == null)
-            {
-                return null;
-            }
-
-            return urlRewriter.ProcessRequestUrl(requestUri, inboundRules);
+            List<InboundRule> inboundRules = GetInboundRules(db);
+            return inboundRules == null ? null : urlRewriter.ProcessRequestUrl(requestUri, inboundRules);
         }
 
         private List<InboundRule> GetInboundRules(Database db)
         {
-            var cache = RulesCacheManager.GetCache(db);
-            var inboundRules = cache.GetInboundRules();
+            RulesCache cache = RulesCacheManager.GetCache(db);
+            List<InboundRule> inboundRules = cache.GetInboundRules();
 
             if (inboundRules != null) return inboundRules;
 

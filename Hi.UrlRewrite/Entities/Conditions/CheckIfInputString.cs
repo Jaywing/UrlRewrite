@@ -5,7 +5,7 @@
         IsAFile,
         IsNotAFile,
         IsADirectory,
-        IsNotADirctory,
+        IsNotADirectory,
         MatchesThePattern,
         DoesNotMatchThePattern
     }

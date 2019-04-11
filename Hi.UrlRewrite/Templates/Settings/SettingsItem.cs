@@ -3,13 +3,9 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Settings
 {
-    public partial class SettingsItem : CustomItem
+    public class SettingsItem : CustomItem
     {
-
         public static readonly string TemplateId = "{B3A4B170-59DE-4438-B4E8-FE74A3C24C00}";
-
-
-        #region Boilerplate CustomItem Code
 
         public SettingsItem(Item innerItem)
             : base(innerItem)
@@ -24,22 +20,9 @@ namespace Hi.UrlRewrite.Templates.Settings
 
         public static implicit operator Item(SettingsItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-        public MultilistField InstallationPublishingTargets
-        {
-	        get
-	        {
-		        return new MultilistField(InnerItem.Fields["Installation Publishing Targets"]);
-	        }
-        }
-
-        #endregion //Field Instance Methods
+        public MultilistField InstallationPublishingTargets => new MultilistField(InnerItem.Fields["Installation Publishing Targets"]);
     }
 }

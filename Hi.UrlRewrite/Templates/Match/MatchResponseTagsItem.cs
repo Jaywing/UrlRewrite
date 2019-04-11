@@ -3,12 +3,10 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Match
 {
-    public partial class MatchResponseTagsItem : CustomItem
+    public class MatchResponseTagsItem : CustomItem
     {
 
-        public static readonly string TemplateId = "{E07F2DBA-75E2-4621-91B4-A1A756289D20}";
-
-        #region Boilerplate CustomItem Code
+        public const string TemplateId = "{E07F2DBA-75E2-4621-91B4-A1A756289D20}";
 
         public MatchResponseTagsItem(Item innerItem)
             : base(innerItem)
@@ -22,22 +20,9 @@ namespace Hi.UrlRewrite.Templates.Match
 
         public static implicit operator Item(MatchResponseTagsItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
 
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-        public MultilistField MatchTheContentWithin
-        {
-            get
-            {
-                return new MultilistField(InnerItem.Fields["Match the content within"]);
-            }
-        }
-
-        #endregion //Field Instance Methods
+        public MultilistField MatchTheContentWithin => new MultilistField(InnerItem.Fields["Match the content within"]);
     }
 }

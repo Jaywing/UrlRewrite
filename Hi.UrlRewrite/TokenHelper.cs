@@ -5,7 +5,7 @@ namespace Hi.UrlRewrite
     {
         public static string TokenString(Tokens token)
         {
-            return string.Format("{{{0}}}", token);
+            return $"{{{token}}}";
         }
 
         public static string Formatted(this Tokens token)

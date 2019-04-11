@@ -25,11 +25,11 @@ namespace Hi.UrlRewrite.Processing
 
             foreach (Match groupMatch in groupRegex.Matches(input))
             {
-                var num = groupMatch.Groups[2];
-                var groupIndex = Convert.ToInt32(num.Value);
-                var group = match.Groups[groupIndex];
-                var matchText = groupMatch.ToString();
-                var groupValue = group.Value;
+                Group num = groupMatch.Groups[2];
+                int groupIndex = Convert.ToInt32(num.Value);
+                Group group = match.Groups[groupIndex];
+                string matchText = groupMatch.ToString();
+                string groupValue = group.Value;
 
                 input = input.Replace(matchText, groupValue);
             }
@@ -43,7 +43,7 @@ namespace Hi.UrlRewrite.Processing
             input = input.Replace(Tokens.HTTP_HOST.Formatted(), uri.Host);
 
             // querystring replacement
-            var query = uri.Query;
+            string query = uri.Query;
             if (query.Length > 0)
             {
                 query = query.Substring(1);
@@ -51,7 +51,7 @@ namespace Hi.UrlRewrite.Processing
             input = input.Replace(Tokens.QUERY_STRING.Formatted(), HttpUtility.UrlDecode(query));
 
             // scheme replacement
-            var https = uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.InvariantCultureIgnoreCase) ? "on" : "off";
+            string https = uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.InvariantCultureIgnoreCase) ? "on" : "off";
             input = input.Replace(Tokens.HTTPS.Formatted(), https);
 
             return input;
@@ -64,12 +64,12 @@ namespace Hi.UrlRewrite.Processing
             if (replacements != null)
             {
                 var tokenRegex = new Regex(@"{(\w+)}");
-                var tokenMatches = tokenRegex.Matches(input);
+                MatchCollection tokenMatches = tokenRegex.Matches(input);
 
                 foreach (Match tokenMatch in tokenMatches)
                 {
-                    var wholeToken = tokenMatch.Groups[0].Value;
-                    var token = tokenMatch.Groups[1].Value;
+                    string wholeToken = tokenMatch.Groups[0].Value;
+                    string token = tokenMatch.Groups[1].Value;
                     string tokenReplacement = null;
 
                     const string RESPONSE = "RESPONSE_";
@@ -77,14 +77,14 @@ namespace Hi.UrlRewrite.Processing
 
                     if (replacements.ResponseHeaders != null && token.StartsWith(RESPONSE))
                     {
-                        var tokenKey = token.Remove(0, RESPONSE.Length);
+                        string tokenKey = token.Remove(0, RESPONSE.Length);
                         tokenKey = tokenKey.Replace("_", "-");
 
                         tokenReplacement = replacements.ResponseHeaders[tokenKey];
                     }
                     else if (replacements.RequestHeaders != null && token.StartsWith(REQUEST))
                     {
-                        var tokenKey = token.Remove(0, REQUEST.Length);
+                        string tokenKey = token.Remove(0, REQUEST.Length);
                         tokenKey = tokenKey.Replace("_", "-");
 
                         tokenReplacement = replacements.RequestHeaders[tokenKey];
@@ -115,13 +115,13 @@ namespace Hi.UrlRewrite.Processing
         {
             var conditionRegex = new Regex(condition.Pattern, condition.IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
-            var conditionInput = ReplaceTokens(replacements, condition.InputString);
+            string conditionInput = ReplaceTokens(replacements, condition.InputString);
             if (previousConditionMatch != null)
             {
                 conditionInput = ReplaceConditionBackReferences(previousConditionMatch, conditionInput);
             }
 
-            var returnMatch = conditionRegex.Match(conditionInput);
+            Match returnMatch = conditionRegex.Match(conditionInput);
 
             return new ConditionMatch { Match = returnMatch, ConditionInput = conditionInput };
         }
@@ -132,7 +132,7 @@ namespace Hi.UrlRewrite.Processing
             bool conditionMatches;
             lastConditionMatch = null;
 
-            var conditionLogicalGrouping = rule.ConditionLogicalGrouping.HasValue
+            LogicalGrouping conditionLogicalGrouping = rule.ConditionLogicalGrouping.HasValue
                 ? rule.ConditionLogicalGrouping.Value
                 : LogicalGrouping.MatchAll;
 
@@ -140,11 +140,11 @@ namespace Hi.UrlRewrite.Processing
 
             if (conditionLogicalGrouping == LogicalGrouping.MatchAll)
             {
-                foreach (var condition in rule.Conditions)
+                foreach (Condition condition in rule.Conditions)
                 {
-                    var conditionMatched = TestConditionMatch(replacements, condition, lastConditionMatch);
-                    var conditionMatch = conditionMatched.Match;
-                    var conditionInput = conditionMatched.ConditionInput;
+                    ConditionMatch conditionMatched = TestConditionMatch(replacements, condition, lastConditionMatch);
+                    Match conditionMatch = conditionMatched.Match;
+                    string conditionInput = conditionMatched.ConditionInput;
 
                     conditionMatches = conditionMatch.Success;
 
@@ -168,11 +168,11 @@ namespace Hi.UrlRewrite.Processing
             }
             else
             {
-                foreach (var condition in rule.Conditions)
+                foreach (Condition condition in rule.Conditions)
                 {
-                    var conditionMatched = TestConditionMatch(replacements, condition);
-                    var conditionMatch = conditionMatched.Match;
-                    var conditionInput = conditionMatched.ConditionInput;
+                    ConditionMatch conditionMatched = TestConditionMatch(replacements, condition);
+                    Match conditionMatch = conditionMatched.Match;
+                    string conditionInput = conditionMatched.ConditionInput;
 
                     conditionMatches = conditionMatch.Success;
 
@@ -201,6 +201,5 @@ namespace Hi.UrlRewrite.Processing
             public NameValueCollection RequestHeaders { get; set; }
             public NameValueCollection ResponseHeaders { get; set; }
         }
-
     }
 }

@@ -2,14 +2,10 @@ using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Match.Types
 {
-    public partial class MatchTypeItem : CustomItem
+    public class MatchTypeItem : CustomItem
     {
-
-        public static readonly string TemplateId = "{54FB682D-57DA-401F-853A-7556F0213C4C}";
-
-
-        #region Boilerplate CustomItem Code
-
+        public const string TemplateId = "{54FB682D-57DA-401F-853A-7556F0213C4C}";
+        
         public MatchTypeItem(Item innerItem)
             : base(innerItem)
         {
@@ -23,15 +19,7 @@ namespace Hi.UrlRewrite.Templates.Match.Types
 
         public static implicit operator Item(MatchTypeItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-
-        #endregion //Field Instance Methods
     }
 }

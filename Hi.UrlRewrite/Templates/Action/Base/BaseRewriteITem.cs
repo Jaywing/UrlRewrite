@@ -1,40 +1,23 @@
-﻿using Sitecore.Data.Fields;
-using Sitecore.Data.Items;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Sitecore.Data.Items;
 
 namespace Hi.UrlRewrite.Templates.Action.Base
 {
-
-    public partial class BaseRewriteItem : CustomItem
+    public class BaseRewriteItem : CustomItem
     {
+        public const string TemplateId = "{7E95E23F-437C-46DC-97AA-F2F6C79B78C1}";
 
-        public static readonly string TemplateId = "{7E95E23F-437C-46DC-97AA-F2F6C79B78C1}";
+        public BaseStopProcessingItem BaseStopProcessingItem { get; }
 
-        #region Inherited Base Templates
+        public BaseAppendQuerystringItem BaseAppendQuerystringItem { get; }
 
-        private readonly BaseStopProcessingItem _BaseStopProcessingItem;
-        public BaseStopProcessingItem BaseStopProcessingItem { get { return _BaseStopProcessingItem; } }
-
-        private readonly BaseAppendQuerystringItem _BaseAppendQuerystringItem;
-        public BaseAppendQuerystringItem BaseAppendQuerystringItem { get { return _BaseAppendQuerystringItem; } }
-
-        private readonly BaseRewriteUrlItem _BaseRewriteUrlItem;
-        public BaseRewriteUrlItem BaseRewriteUrlItem { get { return _BaseRewriteUrlItem; } }
-
-        #endregion
-
-        #region Boilerplate CustomItem Code
+        public BaseRewriteUrlItem BaseRewriteUrlItem { get; }
 
         public BaseRewriteItem(Item innerItem)
             : base(innerItem)
         {
-            _BaseStopProcessingItem = new BaseStopProcessingItem(innerItem);
-            _BaseAppendQuerystringItem = new BaseAppendQuerystringItem(innerItem);
-            _BaseRewriteUrlItem = new BaseRewriteUrlItem(innerItem);
+            BaseStopProcessingItem = new BaseStopProcessingItem(innerItem);
+            BaseAppendQuerystringItem = new BaseAppendQuerystringItem(innerItem);
+            BaseRewriteUrlItem = new BaseRewriteUrlItem(innerItem);
         }
 
         public static implicit operator BaseRewriteItem(Item innerItem)
@@ -44,15 +27,7 @@ namespace Hi.UrlRewrite.Templates.Action.Base
 
         public static implicit operator Item(BaseRewriteItem customItem)
         {
-            return customItem != null ? customItem.InnerItem : null;
+            return customItem?.InnerItem;
         }
-
-        #endregion //Boilerplate CustomItem Code
-
-
-        #region Field Instance Methods
-
-        #endregion //Field Instance Methods
     }
-
 }
